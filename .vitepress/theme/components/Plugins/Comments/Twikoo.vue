@@ -58,3 +58,10 @@ onMounted(() => {
   initTwikoo();
 });
 </script>
+
+
+<style>
+.el-textarea__inner {
+    font-family: var(--main-font-family);
+}
+</style>
