@@ -68,22 +68,22 @@ const linkData = [
         desc: "茫茫人海，多么幸运才能遇见你",
         url: "https://www.qingfengnb.cn/",
       },
-    ],
-  },
-    // 丢失
- {
-   type: "lost",
-   typeName: "走丢了",
-   typeDesc: "因为各种原因失联的站点",
-   typeList: [
       {
         name: "洋洋",
         avatar: "/images/friend/yangy.webp",
         desc: "洋洋的小小Blog",
-        url: "https://yangy.co/",
+        url: "https://blog.yangy.co/",
       },
-   ],
- },
+    ],
+  },
+    // 丢失
+//  {
+//    type: "lost",
+//    typeName: "走丢了",
+//    typeDesc: "因为各种原因失联的站点",
+//    typeList: [
+//    ],
+//  },
 ];
 
 export default linkData;
