@@ -80,6 +80,12 @@ const linkData = [
         desc: "An NPC in the world",
         url: "https://dsuk.top/",
       },
+      {
+        name: "FGHRSH",
+        avatar: "/images/friend/FGHRSH.jpg",
+        desc: "FGHRSH 的博客",
+        url: "https://www.fghrsh.net",
+      },
     ],
   },
     // 丢失
