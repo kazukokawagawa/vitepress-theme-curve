@@ -31,7 +31,7 @@
   --main-color-white: #ffffff40;
   --main-color-gray: #999;
   --main-color-red: #ff3842;
-  --main-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,
+  --main-font-family: "Lexend", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,
     Cantarell, "Helvetica Neue", sans-serif;
 }
 
@@ -55,20 +55,26 @@ html.dark {
 // 字体
 html {
   &.vsans {
-    --main-font-family: "vivosans", sans-serif;
+    --main-font-family: "Lexend", "vivosans", sans-serif;
   }
+
   &.hmos {
-    --main-font-family: "HarmonyOS_Regular", sans-serif;
+    --main-font-family: "Lexend", "HarmonyOS_Regular", sans-serif;
   }
+
   &.xlfont {
-    --main-font-family: "xiaolai", sans-serif;
+    --main-font-family: "Lexend", "xiaolai", sans-serif;
   }
+
   p {
-  font-weight: 500; /* Medium */
-}
+    font-weight: 500;
+    /* Medium */
+  }
+
   .iconfont {
     font-size: 1rem;
   }
+
   button {
     font-family: var(--main-font-family);
   }
@@ -81,11 +87,14 @@ html {
     --main-font-second-color: #c6c6c6;
     --main-card-background: #1b1c20de;
     --main-card-second-background: #21232ab5;
+
     .main-nav {
       backdrop-filter: blur(20px);
+
       &.top {
         backdrop-filter: blur(0);
       }
+
       @media (max-width: 768px) {
         &.down {
           .nav-center {
@@ -94,9 +103,11 @@ html {
         }
       }
     }
+
     .loading {
       backdrop-filter: blur(20px);
     }
+
     .tags-cloud {
       .all-tags {
         &::after {
@@ -117,8 +128,10 @@ html {
   user-select: none;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+
   // 特殊情况
   &.dark {
+
     // 代码高亮
     pre {
       code {
@@ -130,6 +143,7 @@ html {
       }
     }
   }
+
   // 全站置灰
   &.gray {
     filter: grayscale(100%);
@@ -152,9 +166,11 @@ a {
   text-decoration: none;
   color: var(--main-font-color);
   transition: all 0.3s;
+
   .iconfont {
     transition: all 0.3s;
   }
+
   &:hover {
     color: var(--main-color);
   }
@@ -165,6 +181,7 @@ a {
   width: 100dvw;
   // height: 100vh;
   transition: filter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
   // 滚动条
   .simplebar-scrollbar {
     &::before {
@@ -176,6 +193,7 @@ a {
         left 0.3s;
       cursor: pointer;
     }
+
     &:hover {
       &::before {
         left: 2px;
@@ -183,6 +201,7 @@ a {
       }
     }
   }
+
   // 全局模糊
   &.blur {
     filter: blur(20px);
@@ -198,6 +217,7 @@ a {
   box-shadow: 0 8px 16px -4px var(--main-border-shadow);
   transition: all 0.3s;
   cursor: pointer;
+
   &:hover {
     &.hover {
       border-color: var(--main-color);
@@ -216,6 +236,7 @@ a {
   background-color: var(--main-scrollbar-bar);
   border-radius: 8px;
   cursor: pointer;
+
   &:hover {
     background-color: var(--main-color);
   }
@@ -232,6 +253,7 @@ a {
   .fancybox__progress {
     background: var(--main-color) !important;
   }
+
   .fancybox__thumb {
     &::after {
       border-width: 2px !important;
@@ -243,14 +265,26 @@ a {
 //自定义块样式
 .custom-block {
   .custom-block-content {
-    p, ul, ol, li {
+
+    p,
+    ul,
+    ol,
+    li {
       color: var(--main-font-color) !important;
     }
   }
 
-  &.info, &.warning, &.danger, &.tip, &.summary {
+  &.info,
+  &.warning,
+  &.danger,
+  &.tip,
+  &.summary {
     .custom-block-content {
-      p, ul, ol, li {
+
+      p,
+      ul,
+      ol,
+      li {
         color: var(--main-font-color) !important;
       }
     }

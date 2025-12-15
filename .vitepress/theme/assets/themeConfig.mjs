@@ -87,6 +87,15 @@ export const themeConfig = {
           href: "https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/xiaolai.css",
         },
       ],
+      // Lexend font
+      [
+        "link",
+        {
+          crossorigin: "anonymous",
+          rel: "stylesheet",
+          href: "https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/Lexend.css",
+        },
+      ],
       // iconfont
       [
         "link",
@@ -109,13 +118,13 @@ export const themeConfig = {
       ],
       // 预载 DocSearch
       [
-       "link",
-       {
-         href: "https://0F1DUC8MAX-dsn.algolia.net",
-         rel: "preconnect",
-         crossorigin: "",
-       },
-     ],
+        "link",
+        {
+          href: "https://0F1DUC8MAX-dsn.algolia.net",
+          rel: "preconnect",
+          crossorigin: "",
+        },
+      ],
     ],
   },
   // 导航栏菜单
@@ -128,18 +137,18 @@ export const themeConfig = {
         { text: "全部标签", link: "/pages/tags", icon: "hashtag" },
       ],
     },
-   // {
-     // text: "专栏",
-     // items: [
-      //  { text: "技术分享", link: "/pages/categories/技术分享", icon: "technical" },
-      //  { text: "我的项目", link: "/pages/project", icon: "code" },
-      //  { text: "效率工具", link: "/pages/tools", icon: "tools" },
+    // {
+    // text: "专栏",
+    // items: [
+    //  { text: "技术分享", link: "/pages/categories/技术分享", icon: "technical" },
+    //  { text: "我的项目", link: "/pages/project", icon: "code" },
+    //  { text: "效率工具", link: "/pages/tools", icon: "tools" },
     //  ],
- //   },
+    //   },
     {
       text: "友链",
       items: [
-      //  { text: "友链鱼塘", link: "/pages/friends", icon: "fish" },
+        //  { text: "友链鱼塘", link: "/pages/friends", icon: "fish" },
         { text: "友情链接", link: "/pages/link", icon: "people" },
       ],
     },
@@ -189,16 +198,16 @@ export const themeConfig = {
         // },
       ],
     },
-  //  {
-   //   name: "项目",
-   //   list: [
-   //     {
-   //       icon: "/images/logo/logo.webp",
-   //       name: "占位符",
-   //       url: "#",
-   //     },
-   //   ],
-   // },
+    //  {
+    //   name: "项目",
+    //   list: [
+    //     {
+    //       icon: "/images/logo/logo.webp",
+    //       name: "占位符",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
   ],
   // 封面配置
   cover: {
@@ -265,13 +274,13 @@ export const themeConfig = {
         ],
       },
       //{
-        //text: "专栏",
-        //items: [
-          //{ text: "技术分享", link: "/pages/categories/技术分享" },
-          //{ text: "我的项目", link: "/pages/project" },
-         // { text: "效率工具", link: "/pages/tools" },
-       // ],
-     // },
+      //text: "专栏",
+      //items: [
+      //{ text: "技术分享", link: "/pages/categories/技术分享" },
+      //{ text: "我的项目", link: "/pages/project" },
+      // { text: "效率工具", link: "/pages/tools" },
+      // ],
+      // },
       {
         text: "页面",
         items: [
@@ -387,13 +396,13 @@ export const themeConfig = {
     apiKey: "1f97c9169943484cfb9a05c825851ca4",
   },
   // 天气 Key
-// 请前往 高德开放平台注册 Web服务 Key
-// 请注意不是 Web端 (JS API)，免费申请，每日上限 5000 次
-// 此处提供的服务可能会超量从而无法访问，请自行申请！请自行申请！请自行申请！
-// 若此处设为空则调用 教书先生 API https://api.oioweb.cn/doc/weather/GetWeather
+  // 请前往 高德开放平台注册 Web服务 Key
+  // 请注意不是 Web端 (JS API)，免费申请，每日上限 5000 次
+  // 此处提供的服务可能会超量从而无法访问，请自行申请！请自行申请！请自行申请！
+  // 若此处设为空则调用 教书先生 API https://api.oioweb.cn/doc/weather/GetWeather
   //weatherkey: {
   //"key": "1d65cc630df1f212e1d2e928643e3974",
- // },
+  // },
   // 打赏
   rewardData: {
     enable: true,
