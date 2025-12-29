@@ -10,6 +10,7 @@
           <i class="iconfont icon-safe" />
           {{ theme.icp }}
         </a>
+        <SystemStatus />
       </div>
       <div class="meta">
         <!--
@@ -43,6 +44,7 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { mainStore } from "@/store";
+import SystemStatus from "@/components/SystemStatus.vue";
 
 const store = mainStore();
 const { theme } = useData();
