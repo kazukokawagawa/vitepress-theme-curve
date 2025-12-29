@@ -82,6 +82,17 @@ const fetchData = async () => {
     pending.value = true;
     error.value = false;
     try {
+        // 在开发环境模拟数据，避免 fetch 本地文件报错
+        if (import.meta.env.DEV) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            data.value = {
+                status: "operational",
+                label: "开发环境正常",
+                updatedAt: new Date().toISOString()
+            };
+            return;
+        }
+
         const res = await fetch(`/api/status?t=${refreshKey.value}`);
         if (!res.ok) throw new Error('Network response was not ok');
         data.value = await res.json();
@@ -167,7 +178,6 @@ const handleRefresh = () => {
   line-height: 1.5;
 
   &:hover {
-    background: var(--main-card-border);
     transform: translateY(-1px);
   }
 
@@ -180,55 +190,30 @@ const handleRefresh = () => {
   &.status--operational {
     background: var(--main-success-color-gray);
     color: var(--main-success-color);
-
-    &:hover {
-      background: var(--main-success-color);
-      color: #fff;
-    }
   }
 
   // 性能下降 - 黄色
   &.status--degraded {
     background: var(--main-warning-color-gray);
     color: var(--main-warning-color);
-
-    &:hover {
-      background: var(--main-warning-color);
-      color: #fff;
-    }
   }
 
   // 部分问题 - 黄色
   &.status--partial {
     background: var(--main-warning-color-gray);
     color: var(--main-warning-color);
-
-    &:hover {
-      background: var(--main-warning-color);
-      color: #fff;
-    }
   }
 
   // 重大事故 - 红色
   &.status--major {
     background: var(--main-error-color-gray);
     color: var(--main-error-color);
-
-    &:hover {
-      background: var(--main-error-color);
-      color: #fff;
-    }
   }
 
   // 正在检修 - 蓝色
   &.status--maintenance {
     background: var(--main-info-color-gray);
     color: var(--main-info-color);
-
-    &:hover {
-      background: var(--main-info-color);
-      color: #fff;
-    }
   }
 
   // 错误/未知状态 - 灰色
@@ -236,10 +221,6 @@ const handleRefresh = () => {
   &.status--unknown {
     background: var(--main-card-second-background);
     color: var(--main-font-second-color);
-
-    &:hover {
-      background: var(--main-card-border);
-    }
   }
 }
 
