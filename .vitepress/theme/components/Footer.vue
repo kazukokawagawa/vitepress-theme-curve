@@ -178,6 +178,12 @@ onBeforeUnmount(() => {
       .meta {
         display: none;
       }
+      .copyright {
+        .time,
+        .author {
+          display: none;
+        }
+      }
     }
     @media (max-width: 420px) {
       .copyright {
