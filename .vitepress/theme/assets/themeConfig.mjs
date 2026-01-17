@@ -31,6 +31,14 @@ export const themeConfig = {
     // 头部
     // https://vitepress.dev/zh/reference/site-config#head
     header: [
+      // Onion-Location
+      [
+        "meta",
+        {
+          "http-equiv": "Onion-Location",
+          content: "chiyubknkdlzx4mjmiuu64sqaez2rxj3ae2weypybpkxpodpx3etsiqd.onion",
+        },
+      ],
       // favicon
       ["link", { rel: "icon", href: "/favicon.ico" }],
       // RSS

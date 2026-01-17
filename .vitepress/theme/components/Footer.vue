@@ -36,6 +36,10 @@
           <i class="iconfont icon-nc-line" />
           <i class="iconfont icon-nd-line" />
         </a>
+        <a class="notbyai link" href="https://notbyai.fyi/" target="_blank">
+          <img class="light-badge" src="/notbyai/Written-By-Human-Not-By-AI-Badge-white.svg" alt="Written By Human" />
+          <img class="dark-badge" src="/notbyai/Written-By-Human-Not-By-AI-Badge-black.svg" alt="Written By Human" />
+        </a>
       </div>
     </div>
   </footer>
@@ -143,6 +147,18 @@ onBeforeUnmount(() => {
           font-weight: normal;
         }
       }
+      .notbyai {
+        padding: 4px !important;
+        img {
+          height: 30px;
+        }
+        .light-badge {
+          display: block;
+        }
+        .dark-badge {
+          display: none;
+        }
+      }
     }
     .link {
       display: inline-flex;
@@ -194,6 +210,17 @@ onBeforeUnmount(() => {
         }
       }
     }
+  }
+}
+</style>
+
+<style lang="scss">
+html.dark .main-footer .notbyai {
+  .light-badge {
+    display: none !important;
+  }
+  .dark-badge {
+    display: block !important;
   }
 }
 </style>

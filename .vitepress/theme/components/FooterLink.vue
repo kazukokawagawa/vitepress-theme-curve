@@ -45,6 +45,22 @@
         </div>
       </div>
     </div>
+    <div class="made-with-love">
+      <span>Made with ❤️</span>
+      <div class="tech-badges">
+        <div 
+          v-for="(badge, index) in techBadges" 
+          :key="index"
+          :class="['badge-item', { expanded: expandedBadge === index }]"
+          @mouseenter="expandedBadge = index"
+          @mouseleave="expandedBadge = null"
+          @click="toggleBadge(index)"
+        >
+          <span class="badge-icon">{{ badge.icon }}</span>
+          <span class="badge-text">{{ badge.text }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -68,6 +84,31 @@ const socialLinkData = computed(() => {
   const secondHalf = footer.social.slice(halfLength);
   return { first: firstHalf, second: secondHalf };
 });
+
+// 技术徽标数据
+const techBadges = [
+  { icon: "📡", text: "IPv6已启用" },
+  { icon: "⚡️", text: "HTTP/3" },
+  { icon: "🧅", text: ".onion可用" },
+  { icon: "🌱", text: "低碳环保" },
+  { icon: "🍪", text: "无Cookie" },
+  { icon: "🕵️", text: "无追踪" },
+];
+
+// 当前展开的徽标索引
+const expandedBadge = ref(null);
+const clickedBadge = ref(null);
+
+// 点击切换徽标展开状态
+const toggleBadge = (index) => {
+  if (clickedBadge.value === index) {
+    clickedBadge.value = null;
+    expandedBadge.value = null;
+  } else {
+    clickedBadge.value = index;
+    expandedBadge.value = index;
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -233,6 +274,69 @@ const socialLinkData = computed(() => {
           &:hover {
             color: var(--main-color);
             background-color: var(--main-color-bg);
+          }
+        }
+      }
+    }
+  }
+  .made-with-love {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0;
+    gap: 1rem;
+    > span {
+      font-size: 18px;
+      color: var(--main-font-second-color);
+    }
+    .tech-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      .badge-item {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 40px;
+        height: 40px;
+        padding: 0 10px;
+        background-color: var(--main-card-second-background);
+        border: 1px solid var(--main-card-border);
+        border-radius: 20px;
+        cursor: pointer;
+        overflow: hidden;
+        transition:
+          max-width 0.4s ease,
+          padding 0.4s ease,
+          border-color 0.3s ease;
+        .badge-icon {
+          font-size: 20px;
+          flex-shrink: 0;
+        }
+        .badge-text {
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--main-font-second-color);
+          white-space: nowrap;
+          opacity: 0;
+          margin-left: 0;
+          overflow: hidden;
+          transition:
+            opacity 0.3s ease 0.1s,
+            margin-left 0.4s ease;
+        }
+        &.expanded,
+        &:hover {
+          max-width: 180px;
+          padding: 0 14px;
+          border-color: var(--main-color);
+          .badge-text {
+            opacity: 1;
+            margin-left: 8px;
           }
         }
       }
