@@ -50,7 +50,16 @@
         </span> -->
       </div>
     </div>
-    <div class="post-content">
+    <!-- 密码保护 - 全屏显示 -->
+    <div v-if="hasPassword && !isUnlocked" class="password-protect-wrapper">
+      <PasswordProtect
+        :password="frontmatter.password"
+        :postId="postId"
+        @unlocked="handleUnlocked"
+      />
+    </div>
+    <!-- 文章正文内容 -->
+    <div v-else class="post-content">
       <article class="post-article s-card">
         <!-- 过期提醒 -->
         <div class="expired s-card" v-if="postMetaData?.expired >= 180">
@@ -105,25 +114,57 @@
 import { formatTimestamp } from "@/utils/helper";
 import { generateId } from "@/utils/commonTools";
 import initFancybox from "@/utils/initFancybox";
+import PasswordProtect from "@/components/PasswordProtect.vue";
 
 const { page, theme, frontmatter } = useData();
 
 // 评论元素
 const commentRef = ref(null);
 
+// 文章 ID
+const postId = computed(() => generateId(page.value.relativePath));
+
 // 获取对应文章数据
 const postMetaData = computed(() => {
-  const postId = generateId(page.value.relativePath);
-  return theme.value.postData.find((item) => item.id === postId);
+  return theme.value.postData.find((item) => item.id === postId.value);
 });
+
+// 密码保护相关
+const hasPassword = computed(() => !!frontmatter.value.password);
+const isUnlocked = ref(false);
+
+// 检查是否已解锁
+const checkUnlocked = () => {
+  if (typeof window === "undefined") return false;
+  const unlockedPosts = JSON.parse(localStorage.getItem("unlockedPosts") || "{}");
+  return unlockedPosts[postId.value] === true;
+};
+
+// 处理解锁事件
+const handleUnlocked = () => {
+  isUnlocked.value = true;
+};
 
 onMounted(() => {
   initFancybox(theme.value);
+  // 检查是否已解锁
+  if (hasPassword.value && checkUnlocked()) {
+    isUnlocked.value = true;
+  }
 });
 </script>
 
 <style lang="scss" scoped>
 @use "../style/post.scss";
+
+.password-protect-wrapper {
+  width: 100%;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-up 0.6s 0.3s backwards;
+}
 
 .post {
   width: 100%;
