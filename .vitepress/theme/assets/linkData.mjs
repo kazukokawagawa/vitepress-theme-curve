@@ -88,7 +88,7 @@ const linkData = [
       },
       {
         name: "bbb-lsy07",
-        avatar: "/images/friend/bbb-lsy07.png",
+        avatar: "/images/friend/bbb-lsy07.webp",
         desc: "科技激荡人文，洞见智慧本真。",
         url: "https://blog.6uu.us/",
       },
