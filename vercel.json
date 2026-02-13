@@ -2,6 +2,17 @@
   "cleanUrls": true,
   "framework": "vitepress",
   "outputDirectory": "./.vitepress/dist",
+  "headers": [
+    {
+      "source": "/redirect.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
     { "source": "/feed.xml", "destination": "/feed.xml" },
