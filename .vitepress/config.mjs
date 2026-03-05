@@ -161,7 +161,7 @@ export default withPwa(
         // 缓存文件
         globPatterns: ["**/*.{js,css,html,ico,png,jpg,jpeg,gif,svg,woff2,ttf}"],
         // 排除路径
-        navigateFallbackDenylist: [/^\/sitemap.xml$/, /^\/rss.xml$/, /^\/robots.txt$/],
+        navigateFallbackDenylist: [/^\/sitemap.xml$/, /^\/rss.xml$/, /^\/robots.txt$/, /^\/redirect(?:\.html)?(?:\/|$)/],
       },
       manifest: {
         name: themeConfig.siteMeta.title,
