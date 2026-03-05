@@ -220,9 +220,15 @@
       // 获取跳转网址
       const getJumpUrl = () => {
         try {
-          // 解析 URL 参数
+          // 同时兼容 ?url= 和 #url=
           const urlParams = new URLSearchParams(window.location.search);
-          const encodedUrl = urlParams.get("url");
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          let encodedUrl = urlParams.get("url") || hashParams.get("url");
+          if (!encodedUrl) {
+            throw new Error("url 参数为空");
+          }
+          // 修复 Base64 在 URL 传递时 + 被当成空格的问题
+          encodedUrl = encodedUrl.replace(/ /g, "+");
           // 解密 Base64
           jumpLink = atob(encodedUrl);
           urlDom.innerHTML = jumpLink;
@@ -256,7 +262,7 @@
         } catch (error) {
           console.error(error);
           jumpContent.remove();
-          urlDom.innerHTML = "获取跳转链接失败";
+          urlDom.innerHTML = "获取跳转链接失败，请检查链接格式";
         }
       };
       document.addEventListener("contextmenu", function (event) {

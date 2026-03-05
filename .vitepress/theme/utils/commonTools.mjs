@@ -122,7 +122,7 @@ export const jumpRedirect = (html, themeConfig, isDom = false) => {
           if (linkHref && !linkHref.includes(redirectPage)) {
             // Base64
             const encodedHref = btoa(linkHref);
-            const redirectLink = `${redirectPage}?url=${encodedHref}`;
+            const redirectLink = `${redirectPage}#url=${encodedHref}`;
             // 保存原始链接
             link.setAttribute("original-href", linkHref);
             // 覆盖 href
@@ -157,7 +157,7 @@ export const jumpRedirect = (html, themeConfig, isDom = false) => {
             }
           }
           // 构造新标签
-          const newLink = `<a href="${redirectPage}?url=${encodedHref}" original-href="${href}" ${attributesStr}>${innerText}</a>`;
+          const newLink = `<a href="${redirectPage}#url=${encodedHref}" original-href="${href}" ${attributesStr}>${innerText}</a>`;
           // 替换原有标签
           $a.replaceWith(newLink);
         }
