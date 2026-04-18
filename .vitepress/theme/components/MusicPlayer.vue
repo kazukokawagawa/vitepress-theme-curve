@@ -2,7 +2,7 @@
 <template>
   <div
     ref="containerRef"
-    :class="['music-player', { playing: isPlaying, expanded: showPlaylist && playlist.length > 1 }]"
+    :class="['music-player', { playing: isPlaying, expanded: showPlaylist && playlist.length > 1, 'with-lyrics': hasLyrics }]"
   >
     <!-- 主播放器 -->
     <div class="player-main">
@@ -366,7 +366,11 @@ watch(() => currentTrack.value.src, (newSrc) => {
   } else {
     embeddedCover.value = '';
   }
-  loadLyrics(currentTrack.value.lrc);
+}, { immediate: true });
+
+// 单独监听歌词变化
+watch(() => currentTrack.value?.lrc, (newLrc) => {
+  loadLyrics(newLrc);
 }, { immediate: true });
 
 watch(currentTime, (newTime) => {
@@ -594,6 +598,12 @@ onBeforeUnmount(() => {
     align-items: center;
     padding: 24px;
     gap: 20px;
+  }
+
+  // 有歌词时撑开高度
+  &.with-lyrics .player-main {
+    align-items: stretch;
+    min-height: 160px;
   }
 
   // 封面
