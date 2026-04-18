@@ -100,7 +100,7 @@
           </div>
 
           <div class="lyrics-display" v-show="parsedLyrics.length > 0">
-            <transition name="lyric-fade" mode="out-in">
+            <transition name="lyric-fade">
               <div :key="currentLyricKey" class="lyric-lines">
                 <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
               </div>
@@ -748,22 +748,25 @@ onBeforeUnmount(() => {
 
   .lyrics-display {
     flex: 1;
+    position: relative;
     text-align: center;
     font-size: 13px;
     color: var(--main-font-color);
     overflow: hidden;
-    padding: 0 12px;
+    margin: 0 12px;
     height: 38px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 
     .lyric-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 2px;
-      width: 100%;
     }
 
     .lyric-line {
@@ -771,12 +774,14 @@ onBeforeUnmount(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      opacity: 0.9;
+      opacity: 0.95;
       line-height: 1.2;
+      font-weight: 600;
       
       &:nth-child(2) {
         font-size: 11px;
         opacity: 0.6;
+        font-weight: 400;
       }
     }
   }
@@ -789,12 +794,12 @@ onBeforeUnmount(() => {
   
   .lyric-fade-enter-from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
   
   .lyric-fade-leave-to {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-6px);
   }
 
   .controls-left,
