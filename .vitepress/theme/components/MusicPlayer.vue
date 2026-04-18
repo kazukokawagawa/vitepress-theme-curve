@@ -100,7 +100,11 @@
           </div>
 
           <div class="lyrics-display" v-show="parsedLyrics.length > 0">
-            {{ currentLyricLine }}
+            <transition name="lyric-fade" mode="out-in">
+              <div :key="currentLyricKey" class="lyric-lines">
+                <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
+              </div>
+            </transition>
           </div>
 
           <div class="controls-right">
@@ -226,26 +230,38 @@ const showPlaylist = ref(false);
 const isDragging = ref(false);
 const embeddedCover = ref('');
 const parsedLyrics = ref([]);
-const currentLyricLine = ref('');
+const currentLyricLines = ref([]);
+const currentLyricKey = ref('');
 
 // 解析 LRC 文本
 const parseLrc = (text) => {
   if (!text) return [];
   const lines = text.split('\n');
   const result = [];
+  const timeMap = new Map();
   const timeExp = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+  
   for (const line of lines) {
-    let resultMatch = timeExp.exec(line);
-    if (resultMatch) {
+    const matches = [...line.matchAll(timeExp)];
+    if (matches.length > 0) {
       const content = line.replace(timeExp, '').trim();
       if (content) {
-        let time = 0;
-        time += parseInt(resultMatch[1], 10) * 60;
-        time += parseInt(resultMatch[2], 10);
-        time += resultMatch[3] ? parseInt(resultMatch[3], 10) / (resultMatch[3].length === 3 ? 1000 : 100) : 0;
-        result.push({ time, text: content });
+        for (const match of matches) {
+          let time = 0;
+          time += parseInt(match[1], 10) * 60;
+          time += parseInt(match[2], 10);
+          time += match[3] ? parseInt(match[3], 10) / (match[3].length === 3 ? 1000 : 100) : 0;
+          
+          if (!timeMap.has(time)) {
+            timeMap.set(time, []);
+          }
+          timeMap.get(time).push(content);
+        }
       }
     }
+  }
+  for (const [time, textLines] of timeMap.entries()) {
+    result.push({ time, lines: textLines });
   }
   result.sort((a, b) => a.time - b.time);
   return result;
@@ -254,7 +270,8 @@ const parseLrc = (text) => {
 // 加载歌词
 const loadLyrics = async (lrc) => {
   parsedLyrics.value = [];
-  currentLyricLine.value = '';
+  currentLyricLines.value = [];
+  currentLyricKey.value = '';
   if (!lrc) return;
   
   if (lrc.startsWith('http') || lrc.startsWith('/')) {
@@ -329,15 +346,20 @@ watch(() => currentTrack.value.src, (newSrc) => {
 
 watch(currentTime, (newTime) => {
   if (parsedLyrics.value.length === 0) return;
-  let activeText = '';
+  let activeLines = [];
+  let activeKey = '';
   for (let i = 0; i < parsedLyrics.value.length; i++) {
     if (newTime >= parsedLyrics.value[i].time) {
-      activeText = parsedLyrics.value[i].text;
+      activeLines = parsedLyrics.value[i].lines;
+      activeKey = String(parsedLyrics.value[i].time);
     } else {
       break;
     }
   }
-  currentLyricLine.value = activeText;
+  if (currentLyricKey.value !== activeKey) {
+    currentLyricLines.value = activeLines;
+    currentLyricKey.value = activeKey;
+  }
 });
 
 // 进度百分比
@@ -729,12 +751,50 @@ onBeforeUnmount(() => {
     text-align: center;
     font-size: 13px;
     color: var(--main-font-color);
-    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
     padding: 0 12px;
-    transition: all 0.3s ease;
-    opacity: 0.9;
+    height: 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .lyric-lines {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+    }
+
+    .lyric-line {
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 0.9;
+      line-height: 1.2;
+      
+      &:nth-child(2) {
+        font-size: 11px;
+        opacity: 0.6;
+      }
+    }
+  }
+
+  // 动画
+  .lyric-fade-enter-active,
+  .lyric-fade-leave-active {
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  }
+  
+  .lyric-fade-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  
+  .lyric-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
   }
 
   .controls-left,
