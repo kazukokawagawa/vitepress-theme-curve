@@ -26,8 +26,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  // 智能替换 URL 路径中的问号
+  function encodePathQuestionMarks(url: string, forceEncode = false): string {
+    if (!url.includes('?')) return url;
+    const parts = url.split('?');
+    // 如果只有一个问号且强制作为路径，则全部替换
+    if (parts.length === 2 && forceEncode) return parts.join('%3F');
+    // 保留最后一段作为查询参数，其余问号替换为 %3F
+    const query = parts.pop();
+    return `${parts.join('%3F')}?${query}`;
+  }
+
   try {
-    const response = await fetch("https://uptime.betterstack.com/api/v2/monitors", {
+    let fetchUrl = "https://uptime.betterstack.com/api/v2/monitors";
+    
+    // 如果前端请求携带了 url 参数（比如用于获取特定监控项）
+    const rawUrl = req.query.url as string;
+    if (rawUrl) {
+      // 默认将只带一个 ? 的 URL 视作路径一部分（适应你提到的示例），如果有多个则只保留最后一个作为查询参数分隔符
+      const formattedUrl = encodePathQuestionMarks(rawUrl, true);
+      // 将其作为查询参数附加给 Better Stack
+      fetchUrl += `?url=${encodeURIComponent(formattedUrl)}`;
+    }
+
+    const response = await fetch(fetchUrl, {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
