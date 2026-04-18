@@ -667,6 +667,18 @@ onBeforeUnmount(() => {
     flex-direction: column;
     justify-content: center;
     gap: 12px;
+
+    &.has-lyrics {
+      justify-content: space-between;
+
+      .lyrics-display {
+        flex: 1;
+      }
+
+      .bottom-controls {
+        gap: 0;
+      }
+    }
   }
 
   .info-header {
@@ -817,17 +829,7 @@ onBeforeUnmount(() => {
     }
   }
 
-  // 有歌词时的信息区域
-  &.has-lyrics .info-section,
-  .info-section.has-lyrics {
-    .lyrics-display {
-      flex: 1;
-    }
 
-    .bottom-controls {
-      gap: 0;
-    }
-  }
 
   .lyrics-display {
     position: relative;
