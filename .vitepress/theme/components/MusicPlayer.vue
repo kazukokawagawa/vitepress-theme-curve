@@ -227,7 +227,10 @@ const loadEmbeddedCover = async (src) => {
   if (!src || typeof window === 'undefined') return;
   
   try {
-    const jsmediatags = (await import('jsmediatags')).default || (await import('jsmediatags'));
+    let jsmediatagsMod = await import('jsmediatags/dist/jsmediatags.min.js');
+    const jsmediatags = jsmediatagsMod.default || jsmediatagsMod || window.jsmediatags;
+    if (!jsmediatags || !jsmediatags.read) return;
+    
     jsmediatags.read(src, {
       onSuccess: (tag) => {
         const picture = tag.tags.picture;

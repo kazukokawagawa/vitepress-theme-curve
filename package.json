@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@types/node": "^22.18.12",
-    "@vite-pwa/vitepress": "^0.4.0",
+    "@vite-pwa/vitepress": "^0.5.0",
     "@vueuse/core": "^11.3.0",
     "algoliasearch": "^5.40.1",
     "aplayer": "^1.10.1",
@@ -59,6 +59,7 @@
     "lodash-es": "^4.17.21",
     "pinia": "^2.3.1",
     "pinia-plugin-persistedstate": "^3.2.3",
+    "vite-plugin-pwa": "0.20.5",
     "vue": "^3.5.22",
     "vue-instantsearch": "^4.21.3",
     "vue-slider-component": "4.1.0-beta.7"
