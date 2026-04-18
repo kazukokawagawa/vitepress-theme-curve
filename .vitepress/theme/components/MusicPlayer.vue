@@ -35,7 +35,7 @@
       </div>
 
       <!-- 信息区域 -->
-      <div class="info-section">
+      <div class="info-section" :class="{ 'has-lyrics': hasLyrics }">
         <!-- 头部信息 -->
         <div class="info-header">
           <div class="track-info">
@@ -45,7 +45,7 @@
         </div>
 
         <!-- 歌词区间 -->
-        <div class="lyrics-display" v-show="parsedLyrics.length > 0">
+        <div class="lyrics-display" v-if="hasLyrics">
           <transition name="lyric-fade">
             <div :key="currentLyricKey" class="lyric-lines">
               <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
@@ -54,104 +54,121 @@
         </div>
 
         <div class="bottom-controls">
-          <!-- 进度条 -->
-          <div class="progress-wrapper">
+          <!-- 独立进度条（无歌词时显示） -->
+          <div class="progress-wrapper" v-if="!hasLyrics">
             <div
-            class="progress-bar"
-            ref="progressRef"
-            @mousedown="onProgressMouseDown"
-            @touchstart.prevent="onProgressTouchStart"
-          >
-            <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
-            <div class="progress-played" :style="{ width: progressPercent + '%' }">
-              <div class="progress-thumb"></div>
-            </div>
-          </div>
-          <div class="time-display">
-            <span>{{ formatTime(currentTime) }}</span>
-            <span>{{ formatTime(duration) }}</span>
-          </div>
-        </div>
-
-        <!-- 控制栏 -->
-        <div class="controls">
-          <div class="controls-left">
-            <!-- 上一首 -->
-            <button
-              v-if="playlist.length > 1"
-              class="ctrl-btn"
-              @click="prevTrack"
-              title="上一首"
+              class="progress-bar"
+              ref="progressRef"
+              @mousedown="onProgressMouseDown"
+              @touchstart.prevent="onProgressTouchStart"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-              </svg>
-            </button>
-
-            <!-- 播放/暂停 -->
-            <button class="ctrl-btn play-btn" @click="togglePlay" title="播放/暂停">
-              <svg v-if="!isPlaying" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
-              </svg>
-            </button>
-
-            <!-- 下一首 -->
-            <button
-              v-if="playlist.length > 1"
-              class="ctrl-btn"
-              @click="nextTrack"
-              title="下一首"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-              </svg>
-            </button>
-          </div>
-
-          <div class="controls-right">
-            <!-- 音量 -->
-            <div class="volume-wrapper">
-              <button class="ctrl-btn" @click="toggleMute" title="音量">
-                <svg v-if="volume === 0" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                  <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-                </svg>
-                <svg v-else-if="volume < 0.5" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                  <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
-                </svg>
-                <svg v-else viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                </svg>
-              </button>
-              <div class="volume-slider-wrap">
-                <input
-                  type="range"
-                  class="volume-slider"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  :value="volume"
-                  @input="onVolumeChange"
-                />
+              <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
+              <div class="progress-played" :style="{ width: progressPercent + '%' }">
+                <div class="progress-thumb"></div>
               </div>
             </div>
-
-            <!-- 播放列表切换 -->
-            <button
-              v-if="playlist.length > 1"
-              class="ctrl-btn"
-              :class="{ active: showPlaylist }"
-              @click="showPlaylist = !showPlaylist"
-              title="播放列表"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
-              </svg>
-            </button>
+            <div class="time-display">
+              <span>{{ formatTime(currentTime) }}</span>
+              <span>{{ formatTime(duration) }}</span>
+            </div>
           </div>
-        </div>
+
+          <!-- 控制栏 -->
+          <div class="controls">
+            <div class="controls-left">
+              <!-- 上一首 -->
+              <button
+                v-if="playlist.length > 1"
+                class="ctrl-btn"
+                @click="prevTrack"
+                title="上一首"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                </svg>
+              </button>
+
+              <!-- 播放/暂停 -->
+              <button class="ctrl-btn play-btn" @click="togglePlay" title="播放/暂停">
+                <svg v-if="!isPlaying" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                  <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+                </svg>
+              </button>
+
+              <!-- 下一首 -->
+              <button
+                v-if="playlist.length > 1"
+                class="ctrl-btn"
+                @click="nextTrack"
+                title="下一首"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- 内联进度条（有歌词时显示） -->
+            <div class="inline-progress" v-if="hasLyrics">
+              <span class="inline-time">{{ formatTime(currentTime) }}</span>
+              <div
+                class="progress-bar"
+                ref="progressRef"
+                @mousedown="onProgressMouseDown"
+                @touchstart.prevent="onProgressTouchStart"
+              >
+                <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
+                <div class="progress-played" :style="{ width: progressPercent + '%' }">
+                  <div class="progress-thumb"></div>
+                </div>
+              </div>
+              <span class="inline-time">{{ formatTime(duration) }}</span>
+            </div>
+
+            <div class="controls-right">
+              <!-- 音量 -->
+              <div class="volume-wrapper">
+                <button class="ctrl-btn" @click="toggleMute" title="音量">
+                  <svg v-if="volume === 0" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                  </svg>
+                  <svg v-else-if="volume < 0.5" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
+                  </svg>
+                  <svg v-else viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                  </svg>
+                </button>
+                <div class="volume-slider-wrap">
+                  <input
+                    type="range"
+                    class="volume-slider"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    :value="volume"
+                    @input="onVolumeChange"
+                  />
+                </div>
+              </div>
+
+              <!-- 播放列表切换 -->
+              <button
+                v-if="playlist.length > 1"
+                class="ctrl-btn"
+                :class="{ active: showPlaylist }"
+                @click="showPlaylist = !showPlaylist"
+                title="播放列表"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -339,6 +356,9 @@ const playlist = computed(() => {
 const currentTrack = computed(() => {
   return playlist.value[currentIndex.value] || { src: '', title: '', artist: '', cover: '' };
 });
+
+// 是否有歌词
+const hasLyrics = computed(() => parsedLyrics.value.length > 0);
 
 watch(() => currentTrack.value.src, (newSrc) => {
   if (newSrc && !currentTrack.value.cover) {
@@ -771,6 +791,42 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: space-between;
     margin-top: 2px;
+  }
+
+  // 内联进度条（有歌词时）
+  .inline-progress {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 12px;
+    min-width: 0;
+
+    .inline-time {
+      font-size: 11px;
+      color: var(--main-font-second-color);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0.8;
+    }
+
+    .progress-bar {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  // 有歌词时的信息区域
+  &.has-lyrics .info-section,
+  .info-section.has-lyrics {
+    .lyrics-display {
+      flex: 1;
+    }
+
+    .bottom-controls {
+      gap: 0;
+    }
   }
 
   .lyrics-display {
