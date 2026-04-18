@@ -29,6 +29,9 @@ importers:
       instantsearch.js:
         specifier: ^4.80.0
         version: 4.80.0(algoliasearch@5.40.1)
+      jsmediatags:
+        specifier: ^3.9.7
+        version: 3.9.7
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -2858,6 +2861,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  jsmediatags@3.9.7:
+    resolution: {integrity: sha512-xCAO8C3li3t5hYkXqn8iv8zQQUB4T1QqRN2aSONHMls21ICdEvXi4xtb6W70/fAFYSDwMHd32hIqvo4YuXoNcQ==}
+    engines: {node: '>=4.0.0'}
+
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
 
@@ -4273,6 +4280,10 @@ packages:
   xdg-portable@7.3.0:
     resolution: {integrity: sha512-sqMMuL1rc0FmMBOzCpd0yuy9trqF2yTTVe+E9ogwCSWQCdDEtQUwrZPT6AxqtsFGRNxycgncbP/xmOOSPw5ZUw==}
     engines: {node: '>= 6.0'}
+
+  xhr2@0.1.4:
+    resolution: {integrity: sha512-3QGhDryRzTbIDj+waTRvMBe8SyPhW79kz3YnNb+HQt/6LPYQT3zT3Jt0Y8pBofZqQX26x8Ecfv0FXR72uH5VpA==}
+    engines: {node: '>= 0.6'}
 
   xml-js@1.6.11:
     resolution: {integrity: sha512-7rVi2KMfwfWFl+GpPg6m80IVMWXLRjO+PxTq7V2CDhoGak0wzYzFgUY2m4XJ47OGdXd8eLE8EmwfAmdjw7lC1g==}
@@ -7446,6 +7457,10 @@ snapshots:
 
   jsesc@3.1.0: {}
 
+  jsmediatags@3.9.7:
+    dependencies:
+      xhr2: 0.1.4
+
   json-buffer@3.0.1: {}
 
   json-schema-to-ts@1.6.4:
@@ -9054,6 +9069,8 @@ snapshots:
   xdg-portable@7.3.0:
     dependencies:
       os-paths: 4.4.0
+
+  xhr2@0.1.4: {}
 
   xml-js@1.6.11:
     dependencies:

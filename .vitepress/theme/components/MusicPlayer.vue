@@ -8,10 +8,10 @@
     <div class="player-main">
       <!-- 封面 -->
       <div class="cover-wrapper" @click="togglePlay">
-        <div class="cover-spin" :class="{ spinning: isPlaying }">
+        <div class="cover-spin">
           <img
-            v-if="currentTrack.cover"
-            :src="currentTrack.cover"
+            v-if="currentTrack.cover || embeddedCover"
+            :src="currentTrack.cover || embeddedCover"
             :alt="currentTrack.title"
             class="cover-img"
           />
@@ -179,11 +179,11 @@
       preload="metadata"
       @timeupdate="onTimeUpdate"
       @loadedmetadata="onLoadedMetadata"
+      @durationchange="onDurationChange"
       @ended="onEnded"
       @progress="onProgress"
       @play="isPlaying = true"
       @pause="isPlaying = false"
-      @error="onAudioError"
     ></audio>
   </div>
 </template>
@@ -219,6 +219,42 @@ const bufferedPercent = ref(0);
 const currentIndex = ref(0);
 const showPlaylist = ref(false);
 const isDragging = ref(false);
+const embeddedCover = ref('');
+
+// 加载音频内嵌封面
+const loadEmbeddedCover = async (src) => {
+  embeddedCover.value = '';
+  if (!src || typeof window === 'undefined') return;
+  
+  try {
+    const jsmediatags = (await import('jsmediatags')).default || (await import('jsmediatags'));
+    jsmediatags.read(src, {
+      onSuccess: (tag) => {
+        const picture = tag.tags.picture;
+        if (picture) {
+          let base64String = "";
+          for (let i = 0; i < picture.data.length; i++) {
+            base64String += String.fromCharCode(picture.data[i]);
+          }
+          embeddedCover.value = "data:" + picture.format + ";base64," + window.btoa(base64String);
+        }
+      },
+      onError: (error) => {
+        // ignore errors
+      }
+    });
+  } catch (err) {
+    // ignore errors
+  }
+};
+
+watch(() => currentTrack.value.src, (newSrc) => {
+  if (newSrc && !currentTrack.value.cover) {
+    loadEmbeddedCover(newSrc);
+  } else {
+    embeddedCover.value = '';
+  }
+}, { immediate: true });
 
 // 播放列表
 const playlist = computed(() => {
@@ -252,20 +288,11 @@ const formatTime = (seconds) => {
 
 // 播放控制
 const togglePlay = () => {
-  console.log('🎵 togglePlay called', {
-    audioRef: !!audioRef.value,
-    src: currentTrack.value?.src,
-    isPlaying: isPlaying.value,
-  });
-  if (!audioRef.value) {
-    console.error('🎵 audioRef is null!');
-    return;
-  }
+  if (!audioRef.value) return;
   if (isPlaying.value) {
     audioRef.value.pause();
   } else {
-    audioRef.value.play().catch((err) => {
-      console.error('⚠️ 播放失败:', err);
+    audioRef.value.play().catch(() => {
     });
   }
 };
@@ -357,13 +384,24 @@ const onProgressTouchStart = (e) => {
 const onTimeUpdate = () => {
   if (!isDragging.value && audioRef.value) {
     currentTime.value = audioRef.value.currentTime;
+    if (audioRef.value.duration && !isNaN(audioRef.value.duration) && audioRef.value.duration !== Infinity && audioRef.value.duration !== duration.value) {
+      duration.value = audioRef.value.duration;
+    }
   }
 };
 
 const onLoadedMetadata = () => {
   if (audioRef.value) {
-    duration.value = audioRef.value.duration;
+    if (audioRef.value.duration && !isNaN(audioRef.value.duration) && audioRef.value.duration !== Infinity) {
+      duration.value = audioRef.value.duration;
+    }
     audioRef.value.volume = volume.value;
+  }
+};
+
+const onDurationChange = () => {
+  if (audioRef.value && !isNaN(audioRef.value.duration) && audioRef.value.duration !== Infinity) {
+    duration.value = audioRef.value.duration;
   }
 };
 
@@ -381,13 +419,6 @@ const onProgress = () => {
     const buffered = audioRef.value.buffered.end(audioRef.value.buffered.length - 1);
     bufferedPercent.value = (buffered / duration.value) * 100;
   }
-};
-
-const onAudioError = (e) => {
-  console.error('🎵 音频加载错误:', e, {
-    src: audioRef.value?.src,
-    error: audioRef.value?.error,
-  });
 };
 
 // 懒加载：进入可视区域时才预加载
@@ -466,11 +497,6 @@ onBeforeUnmount(() => {
       height: 100%;
       border-radius: 12px;
       overflow: hidden;
-      transition: transform 8s linear;
-
-      &.spinning {
-        animation: cover-rotate 12s linear infinite;
-      }
     }
 
     .cover-img {

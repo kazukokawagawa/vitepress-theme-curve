@@ -55,6 +55,7 @@
     "aplayer": "^1.10.1",
     "dayjs": "^1.11.18",
     "instantsearch.js": "^4.80.0",
+    "jsmediatags": "^3.9.7",
     "lodash-es": "^4.17.21",
     "pinia": "^2.3.1",
     "pinia-plugin-persistedstate": "^3.2.3",
