@@ -78,7 +78,11 @@ export async function onRequestGet(context: any) {
     const downCount = monitors.filter((m: any) => m.attributes.status === "down").length;
     const maintenanceCount = monitors.filter((m: any) => m.attributes.status === "maintenance").length;
     const validatingCount = monitors.filter((m: any) => m.attributes.status === "validating").length;
-    const upCount = monitors.filter((m: any) => m.attributes.status === "up").length;
+    const upCount = monitors.filter((m: any) => 
+      m.attributes.status === "up" || 
+      m.attributes.status === "paused" || 
+      m.attributes.status === "pending"
+    ).length;
 
     let statusType: StatusType;
 
@@ -98,7 +102,7 @@ export async function onRequestGet(context: any) {
       statusType = "maintenance";
     } else if (validatingCount > 0) {
       statusType = "degraded";
-    } else if (upCount === totalCount) {
+    } else if (upCount === totalCount || downCount === 0) {
       statusType = "operational";
     } else {
       statusType = "partial";

@@ -75,7 +75,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const downCount = monitors.filter(m => m.attributes.status === "down").length;
     const maintenanceCount = monitors.filter(m => m.attributes.status === "maintenance").length;
     const validatingCount = monitors.filter(m => m.attributes.status === "validating").length;
-    const upCount = monitors.filter(m => m.attributes.status === "up").length;
+    const upCount = monitors.filter(m => 
+      m.attributes.status === "up" || 
+      m.attributes.status === "paused" || 
+      m.attributes.status === "pending"
+    ).length;
 
     let statusType: StatusType;
 
@@ -95,7 +99,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       statusType = "maintenance";
     } else if (validatingCount > 0) {
       statusType = "degraded";
-    } else if (upCount === totalCount) {
+    } else if (upCount === totalCount || downCount === 0) {
+      // 如果所有状态都是 up/paused/pending，或者根本没有任何 down 的情况，则都视为正常
       statusType = "operational";
     } else {
       statusType = "partial";
