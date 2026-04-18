@@ -604,6 +604,15 @@ onBeforeUnmount(() => {
   &.with-lyrics .player-main {
     align-items: stretch;
     min-height: 160px;
+
+    .cover-wrapper {
+      width: auto;
+      height: auto;
+      aspect-ratio: 1;
+      align-self: center;
+      min-width: 96px;
+      max-width: 140px;
+    }
   }
 
   // 封面
