@@ -36,15 +36,27 @@
 
       <!-- 信息区域 -->
       <div class="info-section">
-        <!-- 歌曲信息 -->
-        <div class="track-info">
-          <span class="track-title">{{ currentTrack.title || '未知曲目' }}</span>
-          <span class="track-artist">{{ currentTrack.artist || '未知艺术家' }}</span>
+        <!-- 头部信息 -->
+        <div class="info-header">
+          <div class="track-info">
+            <span class="track-title">{{ currentTrack.title || '未知曲目' }}</span>
+            <span class="track-artist">{{ currentTrack.artist || '未知艺术家' }}</span>
+          </div>
         </div>
 
-        <!-- 进度条 -->
-        <div class="progress-wrapper">
-          <div
+        <!-- 歌词区间 -->
+        <div class="lyrics-display" v-show="parsedLyrics.length > 0">
+          <transition name="lyric-fade">
+            <div :key="currentLyricKey" class="lyric-lines">
+              <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
+            </div>
+          </transition>
+        </div>
+
+        <div class="bottom-controls">
+          <!-- 进度条 -->
+          <div class="progress-wrapper">
+            <div
             class="progress-bar"
             ref="progressRef"
             @mousedown="onProgressMouseDown"
@@ -99,14 +111,6 @@
             </button>
           </div>
 
-          <div class="lyrics-display" v-show="parsedLyrics.length > 0">
-            <transition name="lyric-fade">
-              <div :key="currentLyricKey" class="lyric-lines">
-                <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
-              </div>
-            </transition>
-          </div>
-
           <div class="controls-right">
             <!-- 音量 -->
             <div class="volume-wrapper">
@@ -147,6 +151,7 @@
               </svg>
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -567,17 +572,17 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 16px;
-    gap: 16px;
+    padding: 24px;
+    gap: 20px;
   }
 
   // 封面
   .cover-wrapper {
     position: relative;
     flex-shrink: 0;
-    width: 80px;
-    height: 80px;
-    border-radius: 12px;
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
     overflow: hidden;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -640,39 +645,57 @@ onBeforeUnmount(() => {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .info-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .track-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    min-width: 0;
 
     .track-title {
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
       color: var(--main-font-color);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.4;
-    }
-
-    .track-artist {
-      font-size: 12px;
-      color: var(--main-font-second-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.3;
     }
+
+    .track-artist {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--main-font-color);
+      opacity: 0.7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+  }
+
+  .bottom-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   // 进度条
   .progress-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    width: 100%;
   }
 
   .progress-bar {
@@ -732,10 +755,14 @@ onBeforeUnmount(() => {
   .time-display {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 11px;
     color: var(--main-font-second-color);
-    line-height: 1;
     font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0.8;
+    margin-top: 4px;
   }
 
   // 控制栏
@@ -747,13 +774,11 @@ onBeforeUnmount(() => {
   }
 
   .lyrics-display {
-    flex: 1;
     position: relative;
     text-align: center;
-    font-size: 13px;
+    font-size: 14px;
     color: var(--main-font-color);
     overflow: hidden;
-    margin: 0 12px;
     height: 38px;
 
     .lyric-lines {
@@ -766,7 +791,7 @@ onBeforeUnmount(() => {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
     }
 
     .lyric-line {
@@ -779,8 +804,8 @@ onBeforeUnmount(() => {
       font-weight: 600;
       
       &:nth-child(2) {
-        font-size: 11px;
-        opacity: 0.6;
+        font-size: 12px;
+        opacity: 0.5;
         font-weight: 400;
       }
     }
@@ -806,7 +831,7 @@ onBeforeUnmount(() => {
   .controls-right {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     flex-shrink: 0;
   }
 
@@ -849,7 +874,7 @@ onBeforeUnmount(() => {
 
       &:hover {
         background-color: var(--main-color);
-        opacity: 0.85;
+        opacity: 0.9;
         color: var(--main-card-background);
         transform: scale(1.08);
       }
