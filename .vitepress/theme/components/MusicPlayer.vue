@@ -99,6 +99,10 @@
             </button>
           </div>
 
+          <div class="lyrics-display" v-show="parsedLyrics.length > 0">
+            {{ currentLyricLine }}
+          </div>
+
           <div class="controls-right">
             <!-- 音量 -->
             <div class="volume-wrapper">
@@ -196,11 +200,12 @@ const props = defineProps({
   title: { type: String, default: '' },
   artist: { type: String, default: '' },
   cover: { type: String, default: '' },
+  lrc: { type: String, default: '' },
   // 列表模式
   list: {
     type: Array,
     default: () => [],
-    // 列表项格式: { src, title, artist, cover }
+    // 列表项格式: { src, title, artist, cover, lrc }
   },
   // 是否自动播放
   autoplay: { type: Boolean, default: false },
@@ -220,6 +225,52 @@ const currentIndex = ref(0);
 const showPlaylist = ref(false);
 const isDragging = ref(false);
 const embeddedCover = ref('');
+const parsedLyrics = ref([]);
+const currentLyricLine = ref('');
+
+// 解析 LRC 文本
+const parseLrc = (text) => {
+  if (!text) return [];
+  const lines = text.split('\n');
+  const result = [];
+  const timeExp = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+  for (const line of lines) {
+    let resultMatch = timeExp.exec(line);
+    if (resultMatch) {
+      const content = line.replace(timeExp, '').trim();
+      if (content) {
+        let time = 0;
+        time += parseInt(resultMatch[1], 10) * 60;
+        time += parseInt(resultMatch[2], 10);
+        time += resultMatch[3] ? parseInt(resultMatch[3], 10) / (resultMatch[3].length === 3 ? 1000 : 100) : 0;
+        result.push({ time, text: content });
+      }
+    }
+  }
+  result.sort((a, b) => a.time - b.time);
+  return result;
+};
+
+// 加载歌词
+const loadLyrics = async (lrc) => {
+  parsedLyrics.value = [];
+  currentLyricLine.value = '';
+  if (!lrc) return;
+  
+  if (lrc.startsWith('http') || lrc.startsWith('/')) {
+    try {
+      const res = await fetch(lrc);
+      if (res.ok) {
+        const text = await res.text();
+        parsedLyrics.value = parseLrc(text);
+      }
+    } catch (e) {
+      console.warn('Failed to load lyrics', e);
+    }
+  } else {
+    parsedLyrics.value = parseLrc(lrc);
+  }
+};
 
 // 加载音频内嵌封面
 const loadEmbeddedCover = async (src) => {
@@ -273,7 +324,21 @@ watch(() => currentTrack.value.src, (newSrc) => {
   } else {
     embeddedCover.value = '';
   }
+  loadLyrics(currentTrack.value.lrc);
 }, { immediate: true });
+
+watch(currentTime, (newTime) => {
+  if (parsedLyrics.value.length === 0) return;
+  let activeText = '';
+  for (let i = 0; i < parsedLyrics.value.length; i++) {
+    if (newTime >= parsedLyrics.value[i].time) {
+      activeText = parsedLyrics.value[i].text;
+    } else {
+      break;
+    }
+  }
+  currentLyricLine.value = activeText;
+});
 
 // 进度百分比
 const progressPercent = computed(() => {
@@ -659,11 +724,25 @@ onBeforeUnmount(() => {
     margin-top: 2px;
   }
 
+  .lyrics-display {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    color: var(--main-font-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 12px;
+    transition: all 0.3s ease;
+    opacity: 0.9;
+  }
+
   .controls-left,
   .controls-right {
     display: flex;
     align-items: center;
     gap: 4px;
+    flex-shrink: 0;
   }
 
   .ctrl-btn {
