@@ -251,14 +251,6 @@ const loadEmbeddedCover = async (src) => {
   }
 };
 
-watch(() => currentTrack.value.src, (newSrc) => {
-  if (newSrc && !currentTrack.value.cover) {
-    loadEmbeddedCover(newSrc);
-  } else {
-    embeddedCover.value = '';
-  }
-}, { immediate: true });
-
 // 播放列表
 const playlist = computed(() => {
   if (props.list && props.list.length > 0) {
@@ -274,6 +266,14 @@ const playlist = computed(() => {
 const currentTrack = computed(() => {
   return playlist.value[currentIndex.value] || { src: '', title: '', artist: '', cover: '' };
 });
+
+watch(() => currentTrack.value.src, (newSrc) => {
+  if (newSrc && !currentTrack.value.cover) {
+    loadEmbeddedCover(newSrc);
+  } else {
+    embeddedCover.value = '';
+  }
+}, { immediate: true });
 
 // 进度百分比
 const progressPercent = computed(() => {
