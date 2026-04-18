@@ -46,7 +46,7 @@
 
         <!-- 歌词区间 -->
         <div class="lyrics-display" v-if="hasLyrics">
-          <transition name="lyric-fade">
+          <transition name="lyric-fade" mode="out-in">
             <div :key="currentLyricKey" class="lyric-lines">
               <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
             </div>
@@ -847,19 +847,18 @@ onBeforeUnmount(() => {
     font-size: 14px;
     color: var(--main-font-color);
     overflow: hidden;
-    height: 38px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     .lyric-lines {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
-      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 4px;
     }
 
     .lyric-line {
@@ -868,12 +867,12 @@ onBeforeUnmount(() => {
       overflow: hidden;
       text-overflow: ellipsis;
       opacity: 0.95;
-      line-height: 1.2;
+      line-height: 1.3;
       font-weight: 600;
       
       &:nth-child(2) {
         font-size: 12px;
-        opacity: 0.5;
+        opacity: 0.7;
         font-weight: 400;
       }
     }
