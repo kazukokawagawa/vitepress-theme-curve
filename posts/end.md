@@ -1024,6 +1024,11 @@ references:
 
 <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=320 height=86 src="//music.163.com/outchain/player?type=2&id=1976813348&auto=0&height=66"></iframe>
 
+<MusicPlayer :list="[
+  { src: 'https://raw.20100907.xyz/other/music/Ours.mp3', title: 'Ours (feat. 初音ミク)', artist: 'Luna&初音ミク', cover: '' },
+]" />
+
+
 ::: card
 好想有女孩子的青春和恋爱啊，但是已经要没机会了呢……
 :::
