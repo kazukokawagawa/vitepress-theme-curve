@@ -183,6 +183,7 @@
       @progress="onProgress"
       @play="isPlaying = true"
       @pause="isPlaying = false"
+      @error="onAudioError"
     ></audio>
   </div>
 </template>
@@ -251,12 +252,20 @@ const formatTime = (seconds) => {
 
 // 播放控制
 const togglePlay = () => {
-  if (!audioRef.value) return;
+  console.log('🎵 togglePlay called', {
+    audioRef: !!audioRef.value,
+    src: currentTrack.value?.src,
+    isPlaying: isPlaying.value,
+  });
+  if (!audioRef.value) {
+    console.error('🎵 audioRef is null!');
+    return;
+  }
   if (isPlaying.value) {
     audioRef.value.pause();
   } else {
-    audioRef.value.play().catch(() => {
-      console.log('⚠️ 自动播放被浏览器阻止');
+    audioRef.value.play().catch((err) => {
+      console.error('⚠️ 播放失败:', err);
     });
   }
 };
@@ -372,6 +381,13 @@ const onProgress = () => {
     const buffered = audioRef.value.buffered.end(audioRef.value.buffered.length - 1);
     bufferedPercent.value = (buffered / duration.value) * 100;
   }
+};
+
+const onAudioError = (e) => {
+  console.error('🎵 音频加载错误:', e, {
+    src: audioRef.value?.src,
+    error: audioRef.value?.error,
+  });
 };
 
 // 懒加载：进入可视区域时才预加载
