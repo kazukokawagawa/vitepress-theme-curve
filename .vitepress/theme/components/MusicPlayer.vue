@@ -2,7 +2,7 @@
 <template>
   <div
     ref="containerRef"
-    :class="['music-player', { playing: isPlaying, expanded: showPlaylist && playlist.length > 1, 'with-lyrics': hasLyrics }]"
+    :class="['music-player', { playing: isPlaying, expanded: showPlaylist && playlist.length > 1, 'with-lyrics': showLyricsMode }]"
   >
     <!-- 主播放器 -->
     <div class="player-main">
@@ -35,7 +35,7 @@
       </div>
 
       <!-- 信息区域 -->
-      <div class="info-section" :class="{ 'has-lyrics': hasLyrics }">
+      <div class="info-section" :class="{ 'has-lyrics': showLyricsMode }">
         <!-- 头部信息 -->
         <div class="info-header">
           <div class="track-info">
@@ -45,33 +45,37 @@
         </div>
 
         <!-- 歌词区间 -->
-        <div class="lyrics-display" v-if="hasLyrics">
-          <transition name="lyric-fade" mode="out-in">
-            <div :key="currentLyricKey" class="lyric-lines">
-              <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
-            </div>
-          </transition>
-        </div>
+        <transition name="lyrics-panel">
+          <div v-if="showLyricsMode" class="lyrics-display">
+            <transition name="lyric-fade" mode="out-in">
+              <div :key="currentLyricKey" class="lyric-lines">
+                <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
+              </div>
+            </transition>
+          </div>
+        </transition>
 
         <div class="bottom-controls">
           <!-- 独立进度条（无歌词时显示） -->
-          <div class="progress-wrapper" v-if="!hasLyrics">
-            <div
-              class="progress-bar"
-              ref="progressRef"
-              @mousedown="onProgressMouseDown"
-              @touchstart.prevent="onProgressTouchStart"
-            >
-              <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
-              <div class="progress-played" :style="{ width: progressPercent + '%' }">
-                <div class="progress-thumb"></div>
+          <transition name="progress-stack" mode="out-in">
+            <div class="progress-wrapper" v-if="!showLyricsMode" key="stacked-progress">
+              <div
+                class="progress-bar"
+                ref="progressRef"
+                @mousedown="onProgressMouseDown"
+                @touchstart.prevent="onProgressTouchStart"
+              >
+                <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
+                <div class="progress-played" :style="{ width: progressPercent + '%' }">
+                  <div class="progress-thumb"></div>
+                </div>
+              </div>
+              <div class="time-display">
+                <span>{{ formatTime(currentTime) }}</span>
+                <span>{{ formatTime(duration) }}</span>
               </div>
             </div>
-            <div class="time-display">
-              <span>{{ formatTime(currentTime) }}</span>
-              <span>{{ formatTime(duration) }}</span>
-            </div>
-          </div>
+          </transition>
 
           <!-- 控制栏 -->
           <div class="controls">
@@ -112,21 +116,23 @@
             </div>
 
             <!-- 内联进度条（有歌词时显示） -->
-            <div class="inline-progress" v-if="hasLyrics">
-              <span class="inline-time">{{ formatTime(currentTime) }}</span>
-              <div
-                class="progress-bar"
-                ref="progressRef"
-                @mousedown="onProgressMouseDown"
-                @touchstart.prevent="onProgressTouchStart"
-              >
-                <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
-                <div class="progress-played" :style="{ width: progressPercent + '%' }">
-                  <div class="progress-thumb"></div>
+            <transition name="progress-inline">
+              <div class="inline-progress" v-if="showLyricsMode">
+                <span class="inline-time">{{ formatTime(currentTime) }}</span>
+                <div
+                  class="progress-bar"
+                  ref="progressRef"
+                  @mousedown="onProgressMouseDown"
+                  @touchstart.prevent="onProgressTouchStart"
+                >
+                  <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
+                  <div class="progress-played" :style="{ width: progressPercent + '%' }">
+                    <div class="progress-thumb"></div>
+                  </div>
                 </div>
+                <span class="inline-time">{{ formatTime(duration) }}</span>
               </div>
-              <span class="inline-time">{{ formatTime(duration) }}</span>
-            </div>
+            </transition>
 
             <div class="controls-right">
               <!-- 音量 -->
@@ -212,8 +218,8 @@
       @durationchange="onDurationChange"
       @ended="onEnded"
       @progress="onProgress"
-      @play="isPlaying = true"
-      @pause="isPlaying = false"
+      @play="onAudioPlay"
+      @pause="onAudioPause"
     ></audio>
   </div>
 </template>
@@ -254,6 +260,7 @@ const embeddedCover = ref('');
 const parsedLyrics = ref([]);
 const currentLyricLines = ref([]);
 const currentLyricKey = ref('');
+const hasStartedPlayback = ref(false);
 
 // 解析 LRC 文本
 const parseLrc = (text) => {
@@ -347,7 +354,7 @@ const playlist = computed(() => {
     return props.list;
   }
   if (props.src) {
-    return [{ src: props.src, title: props.title, artist: props.artist, cover: props.cover }];
+    return [{ src: props.src, title: props.title, artist: props.artist, cover: props.cover, lrc: props.lrc }];
   }
   return [];
 });
@@ -359,8 +366,10 @@ const currentTrack = computed(() => {
 
 // 是否有歌词
 const hasLyrics = computed(() => parsedLyrics.value.length > 0);
+const showLyricsMode = computed(() => hasLyrics.value && hasStartedPlayback.value);
 
 watch(() => currentTrack.value.src, (newSrc) => {
+  hasStartedPlayback.value = false;
   if (newSrc && !currentTrack.value.cover) {
     loadEmbeddedCover(newSrc);
   } else {
@@ -518,6 +527,15 @@ const onLoadedMetadata = () => {
   }
 };
 
+const onAudioPlay = () => {
+  isPlaying.value = true;
+  hasStartedPlayback.value = true;
+};
+
+const onAudioPause = () => {
+  isPlaying.value = false;
+};
+
 const onDurationChange = () => {
   if (audioRef.value && !isNaN(audioRef.value.duration) && audioRef.value.duration !== Infinity) {
     duration.value = audioRef.value.duration;
@@ -598,6 +616,7 @@ onBeforeUnmount(() => {
     align-items: center;
     padding: 24px;
     gap: 20px;
+    transition: min-height 0.32s ease, gap 0.32s ease, padding 0.32s ease;
   }
 
   // 有歌词时撑开高度
@@ -625,6 +644,7 @@ onBeforeUnmount(() => {
     overflow: hidden;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: width 0.32s ease, height 0.32s ease, box-shadow 0.25s ease;
 
     .cover-spin {
       width: 100%;
@@ -686,6 +706,7 @@ onBeforeUnmount(() => {
     flex-direction: column;
     justify-content: center;
     gap: 12px;
+    transition: gap 0.32s ease;
 
     &.has-lyrics {
       justify-content: space-between;
@@ -740,6 +761,7 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow: hidden;
   }
 
   // 进度条
@@ -901,6 +923,63 @@ onBeforeUnmount(() => {
   .lyric-fade-leave-to {
     opacity: 0;
     transform: translateY(-6px);
+  }
+
+  .lyrics-panel-enter-active,
+  .lyrics-panel-leave-active,
+  .progress-stack-enter-active,
+  .progress-stack-leave-active,
+  .progress-inline-enter-active,
+  .progress-inline-leave-active {
+    overflow: hidden;
+    transition:
+      opacity 0.28s ease,
+      transform 0.28s ease,
+      max-width 0.28s ease,
+      max-height 0.28s ease,
+      margin 0.28s ease;
+  }
+
+  .lyrics-panel-enter-from,
+  .lyrics-panel-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-12px);
+  }
+
+  .lyrics-panel-enter-to,
+  .lyrics-panel-leave-from {
+    opacity: 1;
+    max-height: 80px;
+    transform: translateY(0);
+  }
+
+  .progress-stack-enter-from,
+  .progress-stack-leave-to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+
+  .progress-stack-enter-to,
+  .progress-stack-leave-from {
+    opacity: 1;
+    max-height: 64px;
+    transform: translateY(0);
+  }
+
+  .progress-inline-enter-from,
+  .progress-inline-leave-to {
+    opacity: 0;
+    max-width: 0;
+    transform: translateY(10px);
+  }
+
+  .progress-inline-enter-to,
+  .progress-inline-leave-from {
+    opacity: 1;
+    max-width: 320px;
+    transform: translateY(0);
   }
 
   .controls-left,
