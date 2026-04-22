@@ -2,12 +2,12 @@
 <template>
   <div
     ref="containerRef"
-    :class="['music-player', { playing: isPlaying, expanded: showPlaylist && playlist.length > 1, 'with-lyrics': showLyricsMode }]"
+    :class="['music-player', { playing: isPlaying, expanded: showPlaylist && playlist.length > 1, 'with-lyrics': hasLyrics }]"
   >
     <!-- 主播放器 -->
     <div class="player-main">
       <!-- 封面 -->
-      <div class="cover-wrapper" @click="togglePlay">
+      <div class="cover-wrapper">
         <div class="cover-spin">
           <img
             v-if="currentTrack.cover || embeddedCover"
@@ -23,19 +23,10 @@
             </svg>
           </div>
         </div>
-        <!-- 播放/暂停覆盖层 -->
-        <div class="cover-overlay">
-          <svg v-if="!isPlaying" viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
-            <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
-          </svg>
-        </div>
       </div>
 
       <!-- 信息区域 -->
-      <div class="info-section" :class="{ 'has-lyrics': showLyricsMode }">
+      <div class="info-section" :class="{ 'has-lyrics': hasLyrics }">
         <!-- 头部信息 -->
         <div class="info-header">
           <div class="track-info">
@@ -44,21 +35,39 @@
           </div>
         </div>
 
-        <!-- 歌词区间 -->
-        <transition name="lyrics-panel">
-          <div v-if="showLyricsMode" class="lyrics-display">
-            <transition name="lyric-fade" mode="out-in">
-              <div :key="currentLyricKey" class="lyric-lines">
-                <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
+        <div v-if="hasLyrics" class="display-slot">
+          <transition name="display-slot" mode="out-in">
+            <div v-if="showLyricsMode" key="lyrics" class="lyrics-display">
+              <transition name="lyric-fade" mode="out-in">
+                <div :key="currentLyricKey" class="lyric-lines">
+                  <div v-for="(line, idx) in currentLyricLines" :key="idx" class="lyric-line">{{ line }}</div>
+                </div>
+              </transition>
+            </div>
+            <div v-else key="stacked-progress" class="progress-wrapper progress-wrapper-slot">
+              <div
+                class="progress-bar"
+                ref="progressRef"
+                @mousedown="onProgressMouseDown"
+                @touchstart.prevent="onProgressTouchStart"
+              >
+                <div class="progress-buffered" :style="{ width: bufferedPercent + '%' }"></div>
+                <div class="progress-played" :style="{ width: progressPercent + '%' }">
+                  <div class="progress-thumb"></div>
+                </div>
               </div>
-            </transition>
-          </div>
-        </transition>
+              <div class="time-display">
+                <span>{{ formatTime(currentTime) }}</span>
+                <span>{{ formatTime(duration) }}</span>
+              </div>
+            </div>
+          </transition>
+        </div>
 
         <div class="bottom-controls">
           <!-- 独立进度条（无歌词时显示） -->
-          <transition name="progress-stack" mode="out-in">
-            <div class="progress-wrapper" v-if="!showLyricsMode" key="stacked-progress">
+          <transition name="progress-stack">
+            <div class="progress-wrapper" v-if="!hasLyrics">
               <div
                 class="progress-bar"
                 ref="progressRef"
@@ -616,22 +625,7 @@ onBeforeUnmount(() => {
     align-items: center;
     padding: 24px;
     gap: 20px;
-    transition: min-height 0.32s ease, gap 0.32s ease, padding 0.32s ease;
-  }
-
-  // 有歌词时撑开高度
-  &.with-lyrics .player-main {
-    align-items: stretch;
-    min-height: 160px;
-
-    .cover-wrapper {
-      width: auto;
-      height: auto;
-      aspect-ratio: 1;
-      align-self: center;
-      min-width: 96px;
-      max-width: 140px;
-    }
+    transition: gap 0.32s ease, padding 0.32s ease;
   }
 
   // 封面
@@ -642,9 +636,8 @@ onBeforeUnmount(() => {
     height: 96px;
     border-radius: 14px;
     overflow: hidden;
-    cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: width 0.32s ease, height 0.32s ease, box-shadow 0.25s ease;
+    transition: box-shadow 0.25s ease;
 
     .cover-spin {
       width: 100%;
@@ -676,26 +669,6 @@ onBeforeUnmount(() => {
         opacity: 0.7;
       }
     }
-
-    .cover-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(2px);
-      color: #fff;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-
-    &:hover .cover-overlay {
-      opacity: 1;
-    }
   }
 
   // 信息区域
@@ -711,7 +684,7 @@ onBeforeUnmount(() => {
     &.has-lyrics {
       justify-content: space-between;
 
-      .lyrics-display {
+      .display-slot {
         flex: 1;
       }
 
@@ -764,11 +737,22 @@ onBeforeUnmount(() => {
     overflow: hidden;
   }
 
+  .display-slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+  }
+
   // 进度条
   .progress-wrapper {
     display: flex;
     flex-direction: column;
     width: 100%;
+  }
+
+  .progress-wrapper-slot {
+    justify-content: center;
   }
 
   .progress-bar {
@@ -925,8 +909,8 @@ onBeforeUnmount(() => {
     transform: translateY(-6px);
   }
 
-  .lyrics-panel-enter-active,
-  .lyrics-panel-leave-active,
+  .display-slot-enter-active,
+  .display-slot-leave-active,
   .progress-stack-enter-active,
   .progress-stack-leave-active,
   .progress-inline-enter-active,
@@ -940,17 +924,15 @@ onBeforeUnmount(() => {
       margin 0.28s ease;
   }
 
-  .lyrics-panel-enter-from,
-  .lyrics-panel-leave-to {
+  .display-slot-enter-from,
+  .display-slot-leave-to {
     opacity: 0;
-    max-height: 0;
-    transform: translateY(-12px);
+    transform: translateY(8px);
   }
 
-  .lyrics-panel-enter-to,
-  .lyrics-panel-leave-from {
+  .display-slot-enter-to,
+  .display-slot-leave-from {
     opacity: 1;
-    max-height: 80px;
     transform: translateY(0);
   }
 
