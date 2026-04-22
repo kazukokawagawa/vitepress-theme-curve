@@ -683,9 +683,11 @@ onBeforeUnmount(() => {
 
     &.has-lyrics {
       justify-content: space-between;
+      position: relative;
 
       .display-slot {
         flex: 1;
+        justify-content: center;
       }
 
       .bottom-controls {
@@ -741,6 +743,7 @@ onBeforeUnmount(() => {
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
     min-height: 42px;
   }
 
@@ -858,6 +861,7 @@ onBeforeUnmount(() => {
 
   .lyrics-display {
     position: relative;
+    width: 100%;
     text-align: center;
     font-size: 14px;
     color: var(--main-font-color);
