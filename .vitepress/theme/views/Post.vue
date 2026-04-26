@@ -290,14 +290,16 @@ onMounted(() => {
         border-color: var(--main-card-border);
       }
       .expired {
+        border: solid transparent 0;
         margin: 1.2rem 0 2rem 0;
         padding: 0.8rem 1.2rem;
         border-left: 6px solid var(--main-warning-color);
-        border-radius: 6px 16px 16px 6px;
+        border-radius: 8px 16px 16px 8px;
         user-select: none;
         strong {
           color: var(--main-warning-color);
         }
+    
       }
       .other-meta {
         display: flex;
