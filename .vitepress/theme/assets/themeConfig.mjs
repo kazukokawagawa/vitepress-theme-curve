@@ -51,59 +51,6 @@ export const themeConfig = {
           href: "#",
         },
       ],
-      // 预载 CDN
-      [
-        "link",
-        {
-          crossorigin: "",
-          rel: "preconnect",
-          href: "https://s1.hdslb.com",
-        },
-      ],
-      [
-        "link",
-        {
-          crossorigin: "",
-          rel: "preconnect",
-          href: "https://cdn.jsdmirror.com",
-        },
-      ],
-      // vivo sans
-      [
-        "link",
-        {
-          crossorigin: "anonymous",
-          rel: "stylesheet",
-          href: "https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/vivosans.css",
-        },
-      ],
-      // HarmonyOS font
-      [
-        "link",
-        {
-          crossorigin: "anonymous",
-          rel: "stylesheet",
-          href: "https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css",
-        },
-      ],
-      // 小赖字体
-      [
-        "link",
-        {
-          crossorigin: "anonymous",
-          rel: "stylesheet",
-          href: "https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/xiaolai.css",
-        },
-      ],
-      // Lexend font
-      [
-        "link",
-        {
-          crossorigin: "anonymous",
-          rel: "stylesheet",
-          href: "https://cdn.jsdmirror.com/gh/CYYYY5/chiyupic@main/fonts/Lexend.css",
-        },
-      ],
       // iconfont
       [
         "link",

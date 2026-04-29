@@ -31,8 +31,8 @@
   --main-color-white: #ffffff40;
   --main-color-gray: #999;
   --main-color-red: #ff3842;
-  --main-font-family: "Lexend", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu,
-    Cantarell, "Helvetica Neue", sans-serif;
+  --main-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+    "Helvetica Neue", sans-serif;
 }
 
 html.dark {
@@ -55,15 +55,18 @@ html.dark {
 // 字体
 html {
   &.vsans {
-    --main-font-family: "Lexend", "vivosans", sans-serif;
+    --main-font-family: "Lexend", "vivosans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans,
+      Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   }
 
   &.hmos {
-    --main-font-family: "Lexend", "HarmonyOS_Regular", sans-serif;
+    --main-font-family: "Lexend", "HarmonyOS_Regular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   }
 
   &.xlfont {
-    --main-font-family: "Lexend", "xiaolai", sans-serif;
+    --main-font-family: "Lexend", "xiaolai", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans,
+      Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   }
 
   p {

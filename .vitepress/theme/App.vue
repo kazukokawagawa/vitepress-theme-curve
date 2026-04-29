@@ -45,6 +45,7 @@ import { storeToRefs, createPinia } from "pinia";
 import { mainStore, initializeCursor } from "@/store";
 import { calculateScroll, specialDayGray } from "@/utils/helper";
 import cursorInit from "@/utils/cursor.js";
+import { ensureGlobalFontsLoaded } from "@/utils/fontLoader.mjs";
 
 import App from '@/App.vue';
 
@@ -61,6 +62,7 @@ const store = mainStore();
 const { frontmatter, page, theme } = useData();
 const { loadingStatus, footerIsShow, themeValue, themeType, backgroundType, fontFamily, fontSize } =
   storeToRefs(store);
+let fontSwitchTaskId = 0;
 
   onMounted(() => {
   // 自定义鼠标
@@ -139,12 +141,17 @@ const changeSiteThemeType = () => {
 };
 
 // 切换系统字体样式
-const changeSiteFont = () => {
+const changeSiteFont = async () => {
   try {
+    const currentTaskId = ++fontSwitchTaskId;
     const htmlElement = document.documentElement;
+    htmlElement.style.fontSize = fontSize.value + "px";
+    await ensureGlobalFontsLoaded(fontFamily.value);
+
+    if (currentTaskId !== fontSwitchTaskId) return;
+
     htmlElement.classList.remove("vsans", "hmos", "xlfont");
     htmlElement.classList.add(fontFamily.value);
-    htmlElement.style.fontSize = fontSize.value + "px";
   } catch (error) {
     console.error("切换系统字体样式失败", error);
   }
