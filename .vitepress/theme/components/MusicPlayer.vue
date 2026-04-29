@@ -1017,7 +1017,6 @@ onBeforeUnmount(() => {
         background-color: var(--main-color);
         opacity: 0.9;
         color: var(--main-card-background);
-        transform: scale(1.08);
       }
 
       &:active {
