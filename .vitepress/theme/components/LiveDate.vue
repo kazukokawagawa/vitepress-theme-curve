@@ -29,7 +29,13 @@ const { theme } = useData();
 
 const resolvedDate = computed(() => {
   if (props.date) return props.date;
-  if (props.source === "theme-timing") return theme.value.aside.timing?.date || "";
+  if (props.source === "theme-timing") {
+    const timing = theme.value.aside.timing;
+    if (Array.isArray(timing?.items) && timing.items.length > 0) {
+      return timing.items[0]?.date || "";
+    }
+    return timing?.date || "";
+  }
   return "";
 });
 
