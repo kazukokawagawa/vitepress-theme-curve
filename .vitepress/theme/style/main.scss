@@ -153,6 +153,15 @@ html {
   }
 }
 
+// 无 JS 时隐藏依赖交互和客户端数据的区域，避免 SSR 占位内容误导用户
+html:not(.js-enabled) {
+  .main-header,
+  .main-aside,
+  .left-menu {
+    display: none !important;
+  }
+}
+
 body {
   margin: 0;
   padding: 0;

@@ -41,6 +41,8 @@ export const themeConfig = {
       ],
       // favicon
       ["link", { rel: "icon", href: "/favicon.ico" }],
+      // 提前标记 JS 可用，便于 no-js 场景做纯 CSS 降级
+      ["script", {}, "document.documentElement.classList.add('js-enabled');"],
       // RSS
       [
         "link",
