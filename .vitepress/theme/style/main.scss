@@ -160,6 +160,46 @@ html:not(.js-enabled) {
   .left-menu {
     display: none !important;
   }
+
+  // 侧栏被隐藏后，正文区域需要回收宽度并保持居中布局
+  .home .home-content {
+    justify-content: center;
+
+    .posts-content {
+      width: 100%;
+    }
+  }
+
+  .page.has-aside {
+    .page-content {
+      width: 100%;
+    }
+  }
+
+  .post .post-content {
+    justify-content: center;
+
+    .post-article {
+      width: 100%;
+    }
+  }
+
+  // 页脚改为纯静态展示，避免无 JS 时出现误导性的状态徽标
+  .main-footer .footer-content {
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .main-footer .copyright,
+  .main-footer .meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .main-footer .system-status {
+    display: none !important;
+  }
 }
 
 body {

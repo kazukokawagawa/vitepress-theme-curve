@@ -6,8 +6,13 @@
       :key="index"
       :class="['post-item', 's-card', 'hover',{ simple, cover: showCover(item),[`cover-${layoutType}`]: showCover(item) }]"
       :style="{ animationDelay: `${0.4 + index / 10}s` }"
-      @click="toPost(item.regularPath)"
     >
+      <a
+        class="post-link"
+        :href="item.regularPath"
+        :aria-label="`打开文章：${item.title}`"
+        @click="toPost($event, item.regularPath)"
+      />
       <div v-if="!simple && showCover(item)" class="post-cover">
         <img :src="getCover(item)" :alt="item.title">
       </div>
@@ -29,15 +34,15 @@
         </span>
         <div v-if="!simple" class="post-meta">
           <div v-if="item?.tags" class="post-tags">
-            <span
+            <a
               v-for="tags in item?.tags"
               :key="tags"
               class="tags-name"
-              @click.stop="router.go(`/pages/tags/${tags}`)"
+              :href="`/pages/tags/${tags}`"
             >
               <i class="iconfont icon-hashtag" />
               {{ tags }}
-            </span>
+            </a>
           </div>
           <span class="post-time">{{ formatTimestamp(item?.date) }}</span>
         </div>
@@ -97,7 +102,20 @@ const getCover = ({ cover: itemCover }) => {
 }
 
 // 前往文章
-const toPost = (path) => {
+const toPost = (event, path) => {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+
   // 记录滚动位置
   if (typeof window !== "undefined") {
     const scrollY = window.scrollY;
@@ -111,6 +129,7 @@ const toPost = (path) => {
 <style lang="scss" scoped>
 .post-lists {
   .post-item {
+    position: relative;
     padding: 0!important;
     display: flex;
     margin-bottom: 1rem;
@@ -118,6 +137,13 @@ const toPost = (path) => {
     cursor: pointer;
     overflow: hidden;
     height: 200px;
+
+    .post-link {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+    }
     
     .post-cover {
       flex: 0 0 35%;
@@ -136,6 +162,8 @@ const toPost = (path) => {
     }
 
     .post-content {
+      position: relative;
+      z-index: 2;
       flex: 1;
       padding: 1.6rem 2rem;
       display: flex;
@@ -210,6 +238,8 @@ const toPost = (path) => {
             hsla(0, 0%, 100%, 0) 100%
           );
           .tags-name {
+            position: relative;
+            z-index: 3;
             display: flex;
             flex-direction: row;
             align-items: center;
