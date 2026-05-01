@@ -191,7 +191,6 @@ export const mainStore = defineStore("main", {
 export const initializeCursor = () => {
   // 确保只在客户端执行初始化
   if (typeof window === 'undefined' || typeof document === 'undefined') {
-    console.warn('initializeCursor skipped in SSR environment.');
     return;
   }
 

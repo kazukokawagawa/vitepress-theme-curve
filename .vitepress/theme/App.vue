@@ -41,21 +41,11 @@
 </template>
 
 <script setup>
-import { storeToRefs, createPinia } from "pinia";
+import { storeToRefs } from "pinia";
 import { mainStore, initializeCursor } from "@/store";
 import { calculateScroll, specialDayGray } from "@/utils/helper";
-import cursorInit from "@/utils/cursor.js";
 import { ensureGlobalFontsLoaded } from "@/utils/fontLoader.mjs";
 
-import App from '@/App.vue';
-
-const app = createApp(App);
-const pinia = createPinia();
-
-app.use(pinia);
-
-// 在 Pinia store 初始化后调用 initializeCursor
-initializeCursor();
 // const screenWidth = ref(0);
 const route = useRoute();
 const store = mainStore();
@@ -64,11 +54,7 @@ const { loadingStatus, footerIsShow, themeValue, themeType, backgroundType, font
   storeToRefs(store);
 let fontSwitchTaskId = 0;
 
-  onMounted(() => {
-  // 自定义鼠标
-  cursorInit();
-  })
-  //2025.06.12更新：在 Next.js 的服务端渲染过程中，应用会在服务器端先进行渲染
+//2025.06.12更新：在 Next.js 的服务端渲染过程中，应用会在服务器端先进行渲染
   //而在服务器端的 JavaScript 环境中，并没有浏览器提供的 window 对象。
   //最简单的解决方法是确保在客户端代码中访问 window
   //可以通过判断代码是否在浏览器环境中运行来避免在服务器端渲染时执行涉及 window 的代码
@@ -168,6 +154,7 @@ watch(
 );
 
 onMounted(() => {
+  initializeCursor();
   console.log(frontmatter.value, page.value, theme.value);
   // 全站置灰
   specialDayGray();
