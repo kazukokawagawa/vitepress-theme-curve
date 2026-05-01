@@ -4,8 +4,12 @@
     <div class="count-left">
       <span class="text"> 距离 </span>
       <span class="name">{{ theme.aside.countDown.data.name }}</span>
-      <span class="time"> {{ getDaysUntil(theme.aside.countDown.data.date) }} </span>
-      <span class="date">{{ theme.aside.countDown.data.date }}</span>
+      <span class="time">
+        <LiveDate mode="days-until" :date="theme.aside.countDown.data.date" yearly />
+      </span>
+      <span class="date">
+        <LiveDate mode="format" :date="theme.aside.countDown.data.date" format="YYYY-MM-DD" yearly />
+      </span>
     </div>
     <div v-if="remainData" class="count-right">
       <div v-for="(item, tag, index) in remainData" :key="index" class="count-item">
@@ -29,8 +33,8 @@
   </div>
 </template>
 
-<script setup> 
-import { getTimeRemaining, getDaysUntil } from "@/utils/timeTools";
+<script setup>
+import { getTimeRemaining } from "@/utils/timeTools";
 
 const { theme } = useData();
 

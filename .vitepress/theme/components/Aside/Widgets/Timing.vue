@@ -1,33 +1,14 @@
 <script setup>
+import dayjs from "dayjs";
 import { useData } from "vitepress";
 
 const { theme } = useData();
 
-// 拿到配置的日期字符串
-const timingDate = computed(() => theme.value.aside.timing?.date);
-
-// 把日期字符串解析成 Date 实例
-const parsedDate = computed(() => {
-  const ds = timingDate.value;
-  return ds ? new Date(ds) : null;
-});
-
-// 判断是否为未来日期
 const isFuture = computed(() => {
-  const d = parsedDate.value;
-  return d ? d.getTime() > Date.now() : false;
-});
-
-// 计算天数差：未来则向上取整，过去则向下取整
-const dayCount = computed(() => {
-  const d = parsedDate.value;
-  if (!d) return 0;
-  const now = Date.now();
-  const msPerDay = 1000 * 60 * 60 * 24;
-  const diff = now - d.getTime();
-  return diff >= 0
-    ? Math.floor(diff / msPerDay)
-    : Math.ceil(-diff / msPerDay);
+  const ds = theme.value.aside.timing?.date;
+  if (!ds) return false;
+  const target = dayjs(ds);
+  return target.isValid() ? target.isAfter(dayjs()) : false;
 });
 </script>
 
@@ -39,7 +20,7 @@ const dayCount = computed(() => {
           <span class="event-name">
         {{ theme.aside.timing.event }}
     </span> 还有
-      <span class="day-number">{{ dayCount }}</span> 天
+      <span class="day-number"><LiveDate mode="days-gap" source="theme-timing" /></span> 天
     </p>
     <!-- 过去累计天数 -->
     <p v-else class="custom-text">
@@ -51,7 +32,7 @@ const dayCount = computed(() => {
         {{ theme.aside.timing.event }}
     </span>
     已经
-      <span class="day-number">{{ dayCount }}</span> 天
+      <span class="day-number"><LiveDate mode="days-gap" source="theme-timing" /></span> 天
     </p>
   </div>
 </template>
