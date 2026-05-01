@@ -13,7 +13,8 @@ export const mainStore = defineStore("main", {
       // banner
       bannerType: "half",
       // 加载状态
-      loadingStatus: true,
+      // 默认不阻塞 SSR 首屏，路由切换时再由客户端显式开启 Loading。
+      loadingStatus: false,
       // 滚动高度
       scrollData: {
         height: 0,

@@ -34,7 +34,21 @@ export default withPwa(
     // 主题
     appearance: "dark",
     // Head
-    head: themeConfig.inject.header,
+    head: [
+      ...themeConfig.inject.header,
+      [
+        "noscript",
+        {},
+        `<style>
+          .loading {
+            display: none !important;
+          }
+          .mian-layout {
+            display: block !important;
+          }
+        </style>`,
+      ],
+    ],
     // sitemap
     sitemap: {
       hostname: themeConfig.siteMeta.site,

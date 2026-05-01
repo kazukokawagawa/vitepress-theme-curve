@@ -36,17 +36,6 @@ watch(
   },
 );
 
-// 确保加载动画能在页面加载时正确结束
-onMounted(() => {
-  // 如果需要初始化 loadingStatus 为 true，可以在这里设置
-  loadingStatus.value = true;
-
-  // 可选：如果希望在页面加载后 3 秒关闭加载动画
-  // setTimeout(() => {
-  //   loadingStatus.value = false;
-  // }, 3000);
-});
-
 onBeforeUnmount(() => {
   clearTimeout(showTimeOut.value);
 });
