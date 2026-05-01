@@ -253,6 +253,22 @@ export const themeConfig = {
         ],
       },
     ],
+    // 页脚徽标
+    badges: {
+      // 是否显示底部徽标区域
+      enable: true,
+      // 标题文本
+      title: "Made with ❤️",
+      // 徽标列表
+      items: [
+        { icon: "📡", text: "IPv6已启用", show: true },
+        { icon: "⚡️", text: "HTTP/3", show: true },
+        { icon: "🧅", text: ".onion可用", show: false },
+        { icon: "🌱", text: "低碳环保", show: true },
+        { icon: "🍪", text: "无Cookie", show: false },
+        { icon: "🕵️", text: "无追踪", show: true },
+      ],
+    },
   },
   // 评论
   comment: {

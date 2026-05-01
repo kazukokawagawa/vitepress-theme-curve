@@ -45,11 +45,11 @@
         </div>
       </div>
     </div>
-    <div class="made-with-love">
-      <span>Made with ❤️</span>
+    <div v-if="showBadgeSection" class="made-with-love">
+      <span>{{ badgeTitle }}</span>
       <div class="tech-badges">
-        <div 
-          v-for="(badge, index) in techBadges" 
+        <div
+          v-for="(badge, index) in techBadges"
           :key="index"
           :class="['badge-item', { expanded: expandedBadge === index }]"
           @mouseenter="expandedBadge = index"
@@ -68,7 +68,8 @@
 import { smoothScrolling } from "@/utils/helper";
 
 const { theme, site } = useData();
-const { footer, siteMeta } = theme.value;
+const footer = theme.value?.footer ?? {};
+const siteMeta = theme.value?.siteMeta ?? {};
 const props = defineProps({
   // 显示底栏
   showBar: {
@@ -79,14 +80,14 @@ const props = defineProps({
 
 // 社交链接数据
 const socialLinkData = computed(() => {
-  const halfLength = Math.ceil(footer.social.length / 2);
-  const firstHalf = footer.social.slice(0, halfLength);
-  const secondHalf = footer.social.slice(halfLength);
+  const social = footer.social ?? [];
+  const halfLength = Math.ceil(social.length / 2);
+  const firstHalf = social.slice(0, halfLength);
+  const secondHalf = social.slice(halfLength);
   return { first: firstHalf, second: secondHalf };
 });
 
-// 技术徽标数据
-const techBadges = [
+const defaultTechBadges = [
   { icon: "📡", text: "IPv6已启用" },
   { icon: "⚡️", text: "HTTP/3" },
   { icon: "🧅", text: ".onion可用" },
@@ -94,6 +95,34 @@ const techBadges = [
   { icon: "🍪", text: "无Cookie" },
   { icon: "🕵️", text: "无追踪" },
 ];
+
+const badgeConfig = computed(() => footer.badges ?? {});
+
+// 技术徽标数据，优先读取配置，未配置时回退到默认值
+const techBadges = computed(() => {
+  const badgeItems = Array.isArray(badgeConfig.value)
+    ? badgeConfig.value
+    : badgeConfig.value.items;
+
+  const normalizedBadges = (badgeItems ?? defaultTechBadges).filter((badge) => {
+    return badge && badge.show !== false;
+  });
+
+  return normalizedBadges.map((badge) => ({
+    icon: badge.icon ?? "",
+    text: badge.text ?? "",
+  }));
+});
+
+const badgeTitle = computed(() => {
+  if (Array.isArray(badgeConfig.value)) return "Made with ❤️";
+  return badgeConfig.value.title ?? "Made with ❤️";
+});
+
+const showBadgeSection = computed(() => {
+  if (Array.isArray(badgeConfig.value)) return techBadges.value.length > 0;
+  return badgeConfig.value.enable !== false && techBadges.value.length > 0;
+});
 
 // 当前展开的徽标索引
 const expandedBadge = ref(null);
