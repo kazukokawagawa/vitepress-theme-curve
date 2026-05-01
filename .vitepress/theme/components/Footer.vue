@@ -109,6 +109,16 @@ onBeforeUnmount(() => {
     line-height: 1;
     min-height: 32px;
     .copyright {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.1rem;
+
+      .time {
+        display: inline-flex;
+        align-items: center;
+      }
+
       .icp {
         .iconfont {
           font-size: 20px;

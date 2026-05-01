@@ -12,7 +12,7 @@
         :href="item.regularPath"
         :aria-label="`打开文章：${item.title}`"
         @click="toPost($event, item.regularPath)"
-      />
+      ></a>
       <div v-if="!simple && showCover(item)" class="post-cover">
         <img :src="getCover(item)" :alt="item.title">
       </div>
@@ -141,11 +141,12 @@ const toPost = (event, path) => {
     .post-link {
       position: absolute;
       inset: 0;
-      z-index: 1;
+      z-index: 2;
       border-radius: inherit;
     }
     
     .post-cover {
+      pointer-events: none;
       flex: 0 0 35%;
       overflow: hidden;
       transform: translateZ(0);
@@ -163,7 +164,8 @@ const toPost = (event, path) => {
 
     .post-content {
       position: relative;
-      z-index: 2;
+      z-index: 3;
+      pointer-events: none;
       flex: 1;
       padding: 1.6rem 2rem;
       display: flex;
@@ -239,7 +241,8 @@ const toPost = (event, path) => {
           );
           .tags-name {
             position: relative;
-            z-index: 3;
+            z-index: 4;
+            pointer-events: auto;
             display: flex;
             flex-direction: row;
             align-items: center;
