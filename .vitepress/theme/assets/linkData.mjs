@@ -92,6 +92,12 @@ const linkData = [
         desc: "科技激荡人文，洞见智慧本真。",
         url: "https://blog.6uu.us/",
       },
+      {
+        name: "HosinoNeko",
+        avatar: "https://avatars.githubusercontent.com/u/177436503?v=4&size=64",
+        desc: "點解我眼角長期都帶住淚？因為我一直被困喺一個暗無天日嘅十月入面",
+        url: "https://hosinoneko.me/",
+      },
     ],
   },
     // 丢失
