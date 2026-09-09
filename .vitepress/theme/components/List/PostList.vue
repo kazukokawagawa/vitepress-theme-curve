@@ -44,7 +44,7 @@
               {{ tags }}
             </a>
           </div>
-          <span class="post-time">{{ formatTimestamp(item?.date) }}</span>
+          <span class="post-time">{{ formatTimestampAt(item?.date, now) }}</span>
         </div>
       </div>
     </div>
@@ -53,10 +53,13 @@
 
 <script setup>
 import { mainStore } from "@/store";
-import { formatTimestamp } from "@/utils/helper";
+import { formatTimestampAt, useClientNow } from "@/utils/useClientNow.mjs";
 
 const store = mainStore();
 const router = useRouter();
+
+// 相对时间基于浏览器本地时钟实时计算
+const { now } = useClientNow();
 
 const props = defineProps({
   // 列表数据

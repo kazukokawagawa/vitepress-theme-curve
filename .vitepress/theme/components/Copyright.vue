@@ -13,11 +13,11 @@
       </div>
       <div class="meta-item">
         <span class="tip">发布于</span>
-        <span class="name">{{ formatTimestamp(postData?.date) }}</span>
+        <span class="name">{{ formatTimestampAt(postData?.date, now) }}</span>
       </div>
       <div class="meta-item">
         <span class="tip">更新于</span>
-        <span class="name">{{ formatTimestamp(postData?.lastModified) }}</span>
+        <span class="name">{{ formatTimestampAt(postData?.lastModified, now) }}</span>
       </div>
       <div class="meta-item cc">
         <span class="tip">许可协议</span>
@@ -35,9 +35,12 @@
 </template>
 
 <script setup>
-import { formatTimestamp } from "@/utils/helper";
+import { formatTimestampAt, useClientNow } from "@/utils/useClientNow.mjs";
 
 const { theme } = useData();
+
+// 相对时间基于浏览器本地时钟实时计算
+const { now } = useClientNow();
 const props = defineProps({
   // 文章数据
   postData: {

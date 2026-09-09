@@ -35,28 +35,13 @@
 
 <script setup>
 import { getTimeRemaining } from "@/utils/timeTools";
+import { useClientNow } from "@/utils/useClientNow.mjs";
 
 const { theme } = useData();
 
-// 倒计时数据
-const remainData = ref(null);
-const remainInterval = ref(null);
-
-// 获取倒计时数据
-const getRemainData = () => {
-  remainData.value = getTimeRemaining();
-  remainInterval.value = setInterval(() => {
-    remainData.value = getTimeRemaining();
-  }, 1000);
-};
-
-onMounted(() => {
-  getRemainData();
-});
-
-onBeforeUnmount(() => {
-  clearInterval(remainInterval.value);
-});
+// 倒计时数据：基于浏览器本地时钟实时计算，SSR 阶段不输出
+const { now } = useClientNow();
+const remainData = computed(() => (now.value ? getTimeRemaining(now.value) : null));
 </script>
 
 <style lang="scss" scoped>

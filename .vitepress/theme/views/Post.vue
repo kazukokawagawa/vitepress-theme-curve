@@ -32,11 +32,11 @@
       <div class="other-meta">
         <span class="meta date">
           <i class="iconfont icon-date" />
-          {{ formatTimestamp(postMetaData.date) }}
+          {{ formatTimestampAt(postMetaData.date, now) }}
         </span>
         <span class="update meta">
           <i class="iconfont icon-time" />
-          {{ formatTimestamp(page?.lastUpdated || postMetaData.lastModified) }}
+          {{ formatTimestampAt(page?.lastUpdated || postMetaData.lastModified, now) }}
         </span>
         <!-- 热度 -->
         <span class="hot meta">
@@ -62,8 +62,8 @@
     <div v-else class="post-content">
       <article class="post-article s-card">
         <!-- 过期提醒 -->
-        <div class="expired s-card" v-if="postMetaData?.expired >= 180">
-          本文发表于 <strong>{{ postMetaData?.expired }}</strong> 天前，其中的信息可能已经事过境迁
+        <div class="expired s-card" v-if="expiredDays !== null && expiredDays >= 180">
+          本文发表于 <strong>{{ expiredDays }}</strong> 天前，其中的信息可能已经事过境迁
         </div>
         <!-- AI 摘要 -->
         <ArticleGPT />
@@ -112,8 +112,8 @@
 
 
 <script setup>
-import { formatTimestamp } from "@/utils/helper";
 import { generateId } from "@/utils/commonTools";
+import { daysPassedAt, formatTimestampAt, useClientNow } from "@/utils/useClientNow.mjs";
 import initFancybox from "@/utils/initFancybox";
 import { ensureCodeFontLoaded } from "@/utils/fontLoader.mjs";
 import { useDesktopAside } from "@/utils/useDesktopAside.mjs";
@@ -126,6 +126,9 @@ const { postData, loadPostData } = usePostData();
 
 // 评论元素
 const commentRef = ref(null);
+
+// 相对时间统一基于浏览器本地时钟实时计算，避免静态缓存固化构建时间
+const { now } = useClientNow();
 
 // 文章 ID
 
@@ -142,7 +145,6 @@ const postMetaData = computed(() => {
     title: frontmatter.value.title || page.value.title,
     date,
     lastModified: page.value.lastUpdated,
-    expired: date ? Math.floor((Date.now() - date) / (1000 * 60 * 60 * 24)) : 0,
     tags: frontmatter.value.tags || [],
     categories: frontmatter.value.categories || [],
     description: frontmatter.value.description,
@@ -151,6 +153,9 @@ const postMetaData = computed(() => {
     cover: frontmatter.value.cover,
   };
 });
+
+// 文章发表至今的天数（仅客户端计算）
+const expiredDays = computed(() => daysPassedAt(postMetaData.value?.date, now.value));
 
 // 密码保护相关
 const hasPassword = computed(() => !!frontmatter.value.password);

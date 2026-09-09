@@ -2,10 +2,11 @@ import dayjs from "dayjs";
 
 /**
  * 获取时间剩余的函数
+ * @param {import("dayjs").Dayjs} [current] 当前时间，默认取本地浏览器当前时间
  * @return {Object} 包含day、week、month和year的剩余时间信息
  */
-export const getTimeRemaining = () => {
-  const now = dayjs();
+export const getTimeRemaining = (current) => {
+  const now = current || dayjs();
   const dayText = {
     day: "今日",
     week: "本周",

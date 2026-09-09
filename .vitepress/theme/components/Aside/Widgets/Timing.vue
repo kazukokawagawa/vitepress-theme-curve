@@ -1,8 +1,12 @@
 <script setup>
 import dayjs from "dayjs";
 import { useData } from "vitepress";
+import { useClientNow } from "@/utils/useClientNow.mjs";
 
 const { theme } = useData();
+
+// 相对时间基于浏览器本地时钟实时计算
+const { now } = useClientNow();
 
 const normalizeItem = (item) => ({
   icon: item?.icon || "💌",
@@ -32,10 +36,10 @@ const timingItems = computed(() => {
 
 const getDisplayDate = (item) => {
   const target = dayjs(item.date);
-  if (!target.isValid()) return null;
+  if (!target.isValid() || !now.value) return null;
   if (!item.yearly) return target;
 
-  const today = dayjs().startOf("day");
+  const today = now.value.startOf("day");
   let nextDate = target.startOf("day");
   while (nextDate.isBefore(today)) {
     nextDate = nextDate.add(1, "year");
@@ -45,7 +49,7 @@ const getDisplayDate = (item) => {
 
 const isFuture = (item) => {
   const target = getDisplayDate(item);
-  return target ? target.isAfter(dayjs()) : false;
+  return target && now.value ? target.isAfter(now.value) : false;
 };
 
 const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
