@@ -19,13 +19,6 @@
               <i class="iconfont icon-list"></i>
             </div>
             <div
-              :class="['menu-item', { open: store.playerShow }]"
-              title="播放器开关"
-              @click.stop="store.playerShow = !store.playerShow"
-            >
-              <i class="iconfont icon-music"></i>
-            </div>
-            <div
               :class="['menu-item', { open: store.backgroundBlur }]"
               title="背景模糊开关"
               @click.stop="store.changeShowStatus('backgroundBlur')"
