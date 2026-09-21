@@ -1,6 +1,21 @@
 node_modules
 dist
 .vitepress/dist
+.vitepress/cache
 .cache
+
+# 生成物（unplugin 自动产出，不应参与 lint）
+.vitepress/auto-imports.d.ts
+.vitepress/components.d.ts
 auto-imports.d.ts
 components.d.ts
+
+# 临时/脚手架文件与目录（非仓库源码，未纳入版本控制）
+_fix2
+_fix3
+.dsh_baseline
+.claude
+_fix_t1
+_t4_*.mjs
+_t4_*.html
+_t4_*.txt
