@@ -63,11 +63,7 @@
           </a>
         -->
           <!-- 随机文章 -->
-          <div
-            class="menu-btn nav-btn"
-            title="随机前往一篇文章"
-            @click="router.go(shufflePost(theme.postData))"
-          >
+          <div class="menu-btn nav-btn" title="随机前往一篇文章" @click="goRandomPost">
             <i class="iconfont icon-shuffle"></i>
           </div>
           <!-- 搜索 -->
@@ -131,6 +127,7 @@
 import { storeToRefs } from "pinia";
 import { mainStore } from "@/store";
 import { smoothScrolling, shufflePost } from "@/utils/helper";
+import { usePostData } from "@/utils/usePostData.mjs";
 
 const router = useRouter();
 const store = mainStore();
@@ -146,6 +143,24 @@ const SearchModal = defineAsyncComponent(async () => {
 });
 const { scrollData } = storeToRefs(store);
 const { site, theme, frontmatter, page } = useData();
+
+// 文章索引（异步加载，不再是 theme.postData）
+const { postData, loadPostData } = usePostData();
+
+onMounted(() => {
+  // 挂载时预加载，避免首次点击才发起请求
+  loadPostData();
+});
+
+// 随机前往一篇文章
+const goRandomPost = async () => {
+  if (!postData.value.length) {
+    // 数据尚未就绪：按需加载，避免把空数组喂给 shufflePost 抛 TypeError
+    await loadPostData();
+    if (!postData.value.length) return; // 加载失败，静默放弃
+  }
+  router.go(shufflePost(postData.value));
+};
 </script>
 
 <style lang="scss" scoped>

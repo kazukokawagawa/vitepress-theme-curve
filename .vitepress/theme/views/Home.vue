@@ -82,6 +82,17 @@ const allListTotal = computed(() => {
   return data ? data.length : 0;
 });
 
+// 列表总页数（与 Pagination.vue 的 totalPages 口径一致）
+const totalPages = computed(() => Math.max(Math.ceil(allListTotal.value / postSize), 1));
+
+// 把页数钳制到合法范围：下界回落 1，上界钳到最后一页。
+// 必须与 Pagination.vue 的 checkCurrentPage 保持同一口径，否则会出现
+// "页码高亮在末页、列表却是空" 这类两处行为分叉。
+const clampPage = (page) => {
+  if (!Number.isInteger(page) || page < 1) return 1;
+  return Math.min(page, totalPages.value);
+};
+
 // 获得当前页数
 const getCurrentPage = () => {
   if (props.showCategories || props.showTags) {
@@ -89,10 +100,9 @@ const getCurrentPage = () => {
     const routePath = route.path;
     const search = routePath.includes("?") ? routePath.split("?")[1] : window.location.search;
     const params = new URLSearchParams(search);
-    const page = Number(params.get("page"));
-    return Number.isInteger(page) && page > 0 ? page : 1;
+    return clampPage(Number(params.get("page")));
   }
-  return props.page || 1;
+  return clampPage(props.page || 1);
 };
 
 // 更新当前页数

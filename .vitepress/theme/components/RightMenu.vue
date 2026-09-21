@@ -32,11 +32,7 @@
             </div>
           </div>
           <div class="all-menu">
-            <div
-              v-if="clickedType === 'normal'"
-              class="btn"
-              @click="router.go(shufflePost(theme.postData))"
-            >
+            <div v-if="clickedType === 'normal'" class="btn" @click="goRandomPost">
               <i class="iconfont icon-shuffle"></i>
               <span class="name">随便逛逛</span>
             </div>
@@ -226,12 +222,21 @@
 import { storeToRefs } from "pinia";
 import { mainStore } from "@/store";
 import { smoothScrolling, shufflePost, copyText, copyImage, downloadImage } from "@/utils/helper";
+import { usePostData } from "@/utils/usePostData.mjs";
 
 const router = useRouter();
 const store = mainStore();
 const { theme } = useData();
 const { useRightMenu, themeType, playerShow, playerVolume, playState, playerData } =
   storeToRefs(store);
+
+// 文章索引（异步加载，不再是 theme.postData）
+const { postData, loadPostData } = usePostData();
+
+onMounted(() => {
+  // 挂载时预加载，避免首次右键点击才发起请求
+  loadPostData();
+});
 
 // 右键菜单数据
 const rightMenuX = ref(0);
@@ -240,6 +245,17 @@ const clickedType = ref("normal");
 const clickedTypeData = ref(null);
 const rightMenuRef = ref(null);
 const rightMenuShow = ref(false);
+
+// 随机前往一篇文章
+const goRandomPost = async () => {
+  if (!postData.value.length) {
+    // 数据尚未就绪：按需加载，避免把空数组喂给 shufflePost 抛 TypeError
+    await loadPostData();
+    if (!postData.value.length) return; // 加载失败，静默放弃
+  }
+  rightMenuShow.value = false; // 先关菜单再跳转
+  router.go(shufflePost(postData.value));
+};
 
 // 快速评论
 const commentCopyShow = ref(false);

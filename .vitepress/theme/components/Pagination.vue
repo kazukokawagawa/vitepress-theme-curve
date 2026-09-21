@@ -95,7 +95,7 @@ const pageNumber = computed(() => {
   const total = totalPages.value;
   const wingSize = 2; // 当前页前后要显示的页码数
   let startPage = Math.max(current - wingSize, 2);
-  let endPage = Math.min(current + wingSize, total - 1);
+  const endPage = Math.min(current + wingSize, total - 1);
   // 总是显示第一页
   pages.push(1);
   // 当 startPage > 2 时，前面需要显示省略号
@@ -112,9 +112,6 @@ const pageNumber = computed(() => {
   // 当 endPage < totalPages-1 时，后面需要显示省略号
   if (endPage < total - 1) {
     pages.push("...");
-  } else {
-    // 如果 endPage 是 totalPages-1，不需要省略号，直接显示倒数第二页
-    if (endPage === total - 1) endPage = total - 1;
   }
   // 总是显示最后一页，除非只有一页
   if (total > 1) pages.push(total);
@@ -171,7 +168,17 @@ const checkCurrentPage = () => {
   }
   const params = new URLSearchParams(window.location.search);
   const page = Number(params.get("page"));
-  currentPage.value = Number.isInteger(page) && page > 0 ? page : 1;
+  // 先做下界校验：非整数 / <= 0 / 空值一律回落到第 1 页
+  if (!Number.isInteger(page) || page < 1) {
+    currentPage.value = 1;
+    return;
+  }
+  // 再做上界钳制：越界时钳到最后一页，而不是丢弃成第 1 页。
+  // 理由：?page=99 的用户意图是"翻到更靠后的内容"，钳到末页能给出
+  // 非空列表且当前页在页码列表内（高亮正常）；回落成第 1 页则与用户
+  // 意图相反，且会让"翻到最后一页"和"翻过头"看起来毫无区别。
+  const maxPage = Math.max(totalPages.value, 1);
+  currentPage.value = Math.min(page, maxPage);
 };
 
 onMounted(() => {
