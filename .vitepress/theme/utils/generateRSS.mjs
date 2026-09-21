@@ -29,18 +29,25 @@ export const createRssFile = async (config, themeConfig) => {
     render: true,
   }).load();
   // 日期降序排序
-  posts = posts.sort((a, b) => {
-    const dateA = new Date(a.frontmatter.date);
-    const dateB = new Date(b.frontmatter.date);
-    return dateB - dateA;
-  });
+  // frontmatter 的 date 可能缺失或非法，`new Date(undefined)` 会得到 NaN，
+  // 而 NaN 参与比较会让 Array#sort 的结果不可预测（可能把有日期的文章挤下去）。
+  // 这里显式把无法解析的日期排到最后，并用 -Infinity 兜底，保证排序稳定。
+  const dateValue = (frontmatter) => {
+    const parsed = new Date(frontmatter?.date ?? NaN).getTime();
+    return Number.isNaN(parsed) ? -Infinity : parsed;
+  };
+  posts = posts.sort((a, b) => dateValue(b.frontmatter) - dateValue(a.frontmatter));
   for (const { url, frontmatter } of posts) {
     // 仅保留最近 10 篇文章
     if (feed.items.length >= 10) break;
     // 文章信息
     let { title, description, date } = frontmatter;
-    // 处理日期
+    // 处理日期：字符串转 Date；缺失/非法时回退到当前时间，
+    // 避免把 Invalid Date 写进 feed（feed 包会输出 "Invalid Date" 字面量）。
     if (typeof date === "string") date = new Date(date);
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+      date = new Date();
+    }
     // 添加文章
     feed.addItem({
       title,
