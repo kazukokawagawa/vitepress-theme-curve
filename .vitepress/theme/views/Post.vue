@@ -118,6 +118,11 @@ import initFancybox from "@/utils/initFancybox";
 import { ensureCodeFontLoaded } from "@/utils/fontLoader.mjs";
 import { useDesktopAside } from "@/utils/useDesktopAside.mjs";
 import { usePostData } from "@/utils/usePostData.mjs";
+// 注意：必须从零依赖的 dateAnchor.mjs 引入，不能用 getPostData.mjs ——
+// 后者顶部 import 了 globby / fs-extra（Node-only），引入会把它们打进浏览器
+// 产物（globby@14 → @sindresorhus/merge-streams → node:stream），导致构建失败：
+//   "PassThrough" is not exported by "__vite-browser-external"
+import { toLocalDayTimestamp } from "@/utils/dateAnchor.mjs";
 import PasswordProtect from "@/components/PasswordProtect.vue";
 
 const { page, theme, frontmatter } = useData();
@@ -139,7 +144,12 @@ const postMetaData = computed(() => {
   const loadedPost = postData.value.find((item) => item.id === postId.value);
   if (loadedPost) return loadedPost;
 
-  const date = frontmatter.value.date ? new Date(frontmatter.value.date).getTime() : page.value.lastUpdated;
+  // 兜底路径：postData 尚未加载或查不到该文章时，直接由 frontmatter 构造。
+  // date 必须与 getPostData.mjs:109 用同一口径（本地零点），否则同一篇文章
+  // 在两条路径下会得到不同的 epoch，负时区访客会错一天。
+  const date = frontmatter.value.date
+    ? toLocalDayTimestamp(frontmatter.value.date)
+    : page.value.lastUpdated;
   return {
     id: postId.value,
     title: frontmatter.value.title || page.value.title,

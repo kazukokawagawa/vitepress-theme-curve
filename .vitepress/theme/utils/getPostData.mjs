@@ -2,6 +2,12 @@ import { generateId } from "./commonTools.mjs";
 import { globby } from "globby";
 import matter from "gray-matter";
 import fs from "fs-extra";
+import { toLocalDayTimestamp } from "./dateAnchor.mjs";
+
+// 重新导出，保持既有引用（如 `.dsh_baseline` 探针、外部脚本）不失效。
+// 实现位于零依赖的 dateAnchor.mjs —— 客户端组件必须从那里引入，
+// 否则会把本文件的 globby/fs-extra 拖进浏览器构建。
+export { toLocalDayTimestamp };
 
 /**
  * 获取 posts 目录下所有 Markdown 文件的路径
@@ -76,17 +82,12 @@ export const getAllPosts = async () => {
           // 解析 front matter
           const { data } = matter(content);
           const { title, date, categories, description, tags, top, cover } = data;
-          // 计算文章的过期天数
-          const expired = Math.floor(
-            (new Date().getTime() - new Date(date).getTime()) / (1000 * 60 * 60 * 24),
-          );
           // 返回文章对象
           return {
             id: generateId(item),
             title: title || "未命名文章",
-            date: date ? new Date(date).getTime() : birthtimeMs,
+            date: date ? toLocalDayTimestamp(date) : birthtimeMs,
             lastModified: mtimeMs,
-            expired,
             tags,
             categories,
             description,
