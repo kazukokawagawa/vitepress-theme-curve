@@ -2,6 +2,14 @@ import dayjs from "dayjs";
 
 /**
  * 获取时间剩余的函数
+ *
+ * 四行的「还剩」统一按**天**显示，单位不再混用（原先当日行用 hour、其余用 day）。
+ *
+ * 百分比粒度按单位区分：
+ * - `day` 行用**分钟**（当天已过分钟 / 全天 1440），所以百分比在一天内连续变化，
+ *   `Countdown.vue` 的 60s 刷新对它真正生效；
+ * - `week` / `month` / `year` 行用**天**，本来就是各自单位的自然粒度。
+ *
  * @param {import("dayjs").Dayjs} [current] 当前时间，默认取本地浏览器当前时间
  * @return {Object} 包含day、week、month和year的剩余时间信息
  */
@@ -13,61 +21,57 @@ export const getTimeRemaining = (current) => {
     month: "本月",
     year: "本年",
   };
+  const MINUTES_PER_DAY = 24 * 60;
 
   /**
-   * 计算时间差的函数
-   * @param {String} unit 时间单位，可以是 'day', 'week', 'month', 'year'
+   * 按「天」计算剩余的份额（用于 week / month / year）
+   * @param {String} unit 时间单位，可以是 'week', 'month', 'year'
    */
-  const getDifference = (unit) => {
+  const getDifferenceByDay = (unit) => {
     // 获取当前时间单位的开始时间
     const start = now.startOf(unit);
     // 获取当前时间单位的结束时间
     const end = now.endOf(unit);
-    
-    // isDay 變數用來判斷單位是否為 'day'
-    const isDay = unit === "day";
-    
-    // 計算總的天數或小時數
-    const total = end.diff(start, isDay ? "hour" : "day") + 1;
-    
-    // 計算已經過去的天數或小時數
-    // [修正] 移除了原先針對星期日的錯誤判斷，讓 dayjs.diff() 自行處理，邏輯更簡潔且正確。
-    const passed = now.diff(start, isDay ? "hour" : "day");
-    
-    const remaining = total - passed;
-    const percentage = (passed / total) * 100;
-    
-    // 返回数据
+
+    // 先 startOf('day') 再 diff，保证得到的是日历天差而不是 24 小时制差，
+    // 也不会被 dayjs 对 week/month/year 的 day 粒度取整影响。
+    // `+1` 表示把当天本身也算作一天，因此「总天数 - 已过天数」是
+    // 「含当天在内还剩几天」，与「今日 还剩 1 天」的语义一致。
+    const total = end.startOf("day").diff(start.startOf("day"), "day") + 1;
+    // 已过去的完整天数：当天从 0 起算，跨天时才 +1
+    const passed = now.startOf("day").diff(start.startOf("day"), "day");
+
     return {
       name: dayText[unit],
       total: total,
       passed: passed,
-      remaining: remaining,
-      percentage: percentage.toFixed(2),
+      remaining: total - passed,
+      percentage: ((passed / total) * 100).toFixed(2),
+    };
+  };
+
+  /**
+   * 当日行：百分比按分钟推进，`remaining` 仍按「天」返回，
+   * 保证不足一天时显示「还剩 1 天」而不是 0 或小数。
+   */
+  const getDayDifference = () => {
+    const dayStart = now.startOf("day");
+    const minutesPassed = now.diff(dayStart, "minute");
+    // 当天从第 1 分钟起算，剩余量不足一天时也至少是 1 天
+    const remainingInMinutes = dayStart.add(1, "day").diff(now, "minute");
+    return {
+      name: dayText.day,
+      total: MINUTES_PER_DAY,
+      passed: minutesPassed,
+      remaining: Math.max(1, Math.ceil(remainingInMinutes / MINUTES_PER_DAY)),
+      percentage: ((minutesPassed / MINUTES_PER_DAY) * 100).toFixed(2),
     };
   };
 
   return {
-    day: getDifference("day"),
-    week: getDifference("week"),
-    month: getDifference("month"),
-    year: getDifference("year"),
+    day: getDayDifference(),
+    week: getDifferenceByDay("week"),
+    month: getDifferenceByDay("month"),
+    year: getDifferenceByDay("year"),
   };
-};
-
-/**
- * 计算当前日期距离指定日期的日历天数
- * @param {string} dateStr - 指定的日期，格式为 'YYYY-MM-DD'
- * @return {number} 返回剩余的天数
- */
-export const getDaysUntil = (dateStr) => {
-  const now = dayjs();
-  const targetDate = dayjs(dateStr);
-  
-  // [修正] 將兩個日期的時間都設為一天的開始 (00:00:00) 再進行比較。
-  // 這樣可以確保計算的是日曆天數的差異，而不是 24 小時制的差異，結果更符合使用者預期。
-  // 例如，無論今天幾點，計算到明天的天數都會是 1。
-  const daysUntil = targetDate.startOf('day').diff(now.startOf('day'), "day");
-  
-  return daysUntil;
 };

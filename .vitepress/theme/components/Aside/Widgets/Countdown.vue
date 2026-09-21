@@ -12,7 +12,7 @@
       </span>
     </div>
     <div v-if="remainData" class="count-right">
-      <div v-for="(item, tag, index) in remainData" :key="index" class="count-item">
+      <div v-for="(item, index) in remainData" :key="index" class="count-item">
         <div class="item-name">{{ item.name }}</div>
         <div class="item-progress">
           <div
@@ -25,7 +25,7 @@
           <span :class="['remaining', { many: item.percentage >= 60 }]">
             <span class="tip">还剩</span>
             {{ item.remaining }}
-            <span class="tip">{{ tag === "day" ? "小时" : "天" }}</span>
+            <span class="tip">天</span>
           </span>
         </div>
       </div>
@@ -39,8 +39,10 @@ import { useClientNow } from "@/utils/useClientNow.mjs";
 
 const { theme } = useData();
 
-// 倒计时数据：基于浏览器本地时钟实时计算，SSR 阶段不输出
-const { now } = useClientNow();
+// 倒计时数据：基于浏览器本地时钟实时计算，SSR 阶段不输出。
+// 四行的「还剩」统一按天显示；当日行的百分比按分钟推进，
+// 所以 60s 刷新能让它每分钟都动（改前是整点才跳），同时不必每秒重算。
+const { now } = useClientNow({ interval: 60 * 1000 });
 const remainData = computed(() => (now.value ? getTimeRemaining(now.value) : null));
 </script>
 

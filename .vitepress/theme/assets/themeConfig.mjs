@@ -296,10 +296,10 @@ export const themeConfig = {
     // 倒计时
     countDown: {
       enable: true,
-      // 倒计时日期
+      // 倒计时日期（无年份 = 每年循环，指向下一次生日）
       data: {
         name: "生日",
-        date: "2026-09-07",
+        date: "09-07",
       },
     },
     timing: {
