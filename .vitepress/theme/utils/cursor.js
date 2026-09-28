@@ -106,8 +106,12 @@ class Cursor {
   refresh() {
     if (typeof document === 'undefined') return; // 确保在客户端
 
-    this.scr.remove();
-    this.cursor.classList.remove("active");
+    // 移动端在 init() 里会提前 return，this.scr 可能尚未创建；
+    // 桌面端则必须先置空，否则 create() 里的 `if (!this.scr)` 为假，
+    // 被 remove() 掉的 <style> 不会重新挂回，自定义光标样式永久失效。
+    this.scr?.remove();
+    this.scr = null;
+    this.cursor?.classList.remove("active");
     this.pos = {
       curr: null,
       prev: null,

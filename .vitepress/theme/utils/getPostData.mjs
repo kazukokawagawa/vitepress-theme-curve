@@ -3,6 +3,7 @@ import { globby } from "globby";
 import matter from "gray-matter";
 import fs from "fs-extra";
 import { toLocalDayTimestamp } from "./dateAnchor.mjs";
+import { normalizeList } from "./normalizeList.mjs";
 
 // 重新导出，保持既有引用（如 `.dsh_baseline` 探针、外部脚本）不失效。
 // 实现位于零依赖的 dateAnchor.mjs —— 客户端组件必须从那里引入，
@@ -82,14 +83,22 @@ export const getAllPosts = async () => {
           // 解析 front matter
           const { data } = matter(content);
           const { title, date, categories, description, tags, top, cover } = data;
+          // tags / categories 在 frontmatter 里可能是数组，也可能是「裸写」字符串
+          // （README「写文章」承诺两种写法都支持）。这里统一归一化成数组：
+          //   - 字符串若原样透传，模板里的 v-for 会**逐字符**渲染出 404 链接；
+          //   - 同时 trim，避免构建期标签路由键与页面链接不一致。
+          // 未设置时保持 undefined（而不是空数组），以免模板里 `v-if="item?.tags"`
+          // 由「隐藏」变成「渲染空容器」。
+          const toListOrUndefined = (value) =>
+            value === undefined || value === null || value === "" ? undefined : normalizeList(value);
           // 返回文章对象
           return {
             id: generateId(item),
             title: title || "未命名文章",
             date: date ? toLocalDayTimestamp(date) : birthtimeMs,
             lastModified: mtimeMs,
-            tags,
-            categories,
+            tags: toListOrUndefined(tags),
+            categories: toListOrUndefined(categories),
             description,
             regularPath: `/${item.replace(".md", ".html")}`,
             top,
@@ -119,15 +128,10 @@ export const getAllType = (postData) => {
   const tagData = {};
   // 遍历数据
   postData.map((item) => {
-    // 检查是否有 tags 属性
-    if (!item.tags || item.tags.length === 0) return;
-    // 处理标签
-    if (typeof item.tags === "string") {
-      // 以逗号分隔
-      item.tags = item.tags.split(",");
-    }
-    // 遍历文章的每个标签
-    item.tags.forEach((tag) => {
+    // 用共用的归一化实现（并**不再就地改写** item.tags）：
+    // 原先的 `item.tags.split(",")` 不 trim，会让标签路由键变成 " 教程"（URL 里出现 %20），
+    // 与页面上的链接不一致；就地变异也会污染同一数组的其它使用者。
+    normalizeList(item.tags).forEach((tag) => {
       // 初始化标签的统计信息，如果不存在
       if (!tagData[tag]) {
         tagData[tag] = {
@@ -153,14 +157,8 @@ export const getAllCategories = (postData) => {
   const catData = {};
   // 遍历数据
   postData.map((item) => {
-    if (!item.categories || item.categories.length === 0) return;
-    // 处理标签
-    if (typeof item.categories === "string") {
-      // 以逗号分隔
-      item.categories = item.categories.split(",");
-    }
-    // 遍历文章的每个标签
-    item.categories.forEach((tag) => {
+    // 与 getAllType 同一口径，见上方说明
+    normalizeList(item.categories).forEach((tag) => {
       // 初始化标签的统计信息，如果不存在
       if (!catData[tag]) {
         catData[tag] = {
@@ -175,37 +173,4 @@ export const getAllCategories = (postData) => {
     });
   });
   return catData;
-};
-
-/**
- * 获取所有年份及其相关文章的统计信息
- * @param {Object[]} postData - 包含文章信息的数组
- * @returns {Object} - 包含归档统计信息的对象
- */
-export const getAllArchives = (postData) => {
-  const archiveData = {};
-  // 遍历数据
-  postData.forEach((item) => {
-    // 检查是否有 date 属性
-    if (item.date) {
-      // 将时间戳转换为日期对象
-      const date = new Date(item.date);
-      // 获取年份
-      const year = date.getFullYear().toString();
-      // 初始化该年份的统计信息，如果不存在
-      if (!archiveData[year]) {
-        archiveData[year] = {
-          count: 1,
-          articles: [item],
-        };
-      } else {
-        // 如果年份已存在，则增加计数和记录所属文章
-        archiveData[year].count++;
-        archiveData[year].articles.push(item);
-      }
-    }
-  });
-  // 提取年份并按降序排序
-  const sortedYears = Object.keys(archiveData).sort((a, b) => parseInt(b) - parseInt(a));
-  return { data: archiveData, year: sortedYears };
 };

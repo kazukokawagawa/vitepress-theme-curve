@@ -88,8 +88,14 @@ const totalPages = computed(() => Math.max(Math.ceil(allListTotal.value / postSi
 // 把页数钳制到合法范围：下界回落 1，上界钳到最后一页。
 // 必须与 Pagination.vue 的 checkCurrentPage 保持同一口径，否则会出现
 // "页码高亮在末页、列表却是空" 这类两处行为分叉。
+//
+// ⚠️ 上界只能依据**已加载**的文章索引：索引是挂载后才 fetch 的，未就绪时
+// totalPages 恒为 1，此时钳制会把 /page/2 误判为越界 → 用户看到
+// "URL 与高亮是第 2 页、列表却是第 1 页"。故未就绪时只做下界校验，
+// 待数据到达后由下方 watch(totalPages) 再按真实页数钳制一次。
 const clampPage = (page) => {
   if (!Number.isInteger(page) || page < 1) return 1;
+  if (allListTotal.value === 0) return page;
   return Math.min(page, totalPages.value);
 };
 
@@ -169,6 +175,11 @@ watch(
   () => props.page,
   () => updateCurrentPage(),
 );
+
+// 文章索引加载完成后重算一次页数。
+// 冷启动（刷新 / 直接输入 URL）时索引尚未就绪，clampPage 只做了下界校验；
+// 数据到达后 totalPages 才有真实值，此时才对越界页码做上界钳制（?page=99 → 末页）。
+watch(totalPages, () => updateCurrentPage());
 
 watch(
   () => store.loadingStatus,

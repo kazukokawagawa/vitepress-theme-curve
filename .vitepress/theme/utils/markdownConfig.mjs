@@ -48,11 +48,21 @@ const markdownConfig = (md, themeConfig) => {
   });
   // button
   md.use(container, "button", {
-    render: (tokens, idx, _options) => {
+    render: (tokens, idx, _options, env) => {
       const token = tokens[idx];
       const check = token.info.trim().slice("button".length).trim();
       if (token.nesting === 1) {
-        return `<button class="button ${check}">`;
+        // 与 radio 分支同一套处理：`check` 是作者写的行内 markdown，
+        // 直接拼进 class 会被 `x" onclick="…` 这类输入撑开属性、注入脚本。
+        // 先渲染行内 markdown，取纯文本再 HTML 转义。
+        const rendered = md.renderInline(check, { references: env.references });
+        const modifier = md.utils.escapeHtml(
+          rendered
+            .replace(/<[^>]*>/g, " ")
+            .replace(/\s+/g, " ")
+            .trim(),
+        );
+        return `<button class="button${modifier ? ` ${modifier}` : ""}">`;
       } else {
         return "</button>";
       }
@@ -97,8 +107,11 @@ const markdownConfig = (md, themeConfig) => {
   };
   md.renderer.rules.image = (tokens, idx) => {
     const token = tokens[idx];
-    const src = token.attrs[token.attrIndex("src")][1];
-    const alt = token.content;
+    // src / alt 来自作者书写的 markdown，必须转义后再拼进 HTML 属性：
+    // 本仓库的 image 规则是自己拼字符串的（不是走默认 token 渲染器），
+    // 不转义时 `![a" onerror="alert(1)](x.png)` 会撑开 alt 属性并注入事件。
+    const src = md.utils.escapeHtml(token.attrs[token.attrIndex("src")][1]);
+    const alt = md.utils.escapeHtml(token.content);
     if (!themeConfig.fancybox.enable) {
       return `<img src="${src}" alt="${alt}" loading="lazy">`;
     }

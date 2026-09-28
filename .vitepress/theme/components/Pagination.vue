@@ -177,6 +177,14 @@ const checkCurrentPage = () => {
   // 理由：?page=99 的用户意图是"翻到更靠后的内容"，钳到末页能给出
   // 非空列表且当前页在页码列表内（高亮正常）；回落成第 1 页则与用户
   // 意图相反，且会让"翻到最后一页"和"翻过头"看起来毫无区别。
+  //
+  // ⚠️ 上界只能依据**已加载**的 total：文章索引是挂载后才 fetch 的，
+  // 未就绪时 totalPages 为 0，钳制会把 ?page=2 误判成越界并与列表分叉。
+  // 未就绪时先只做下界校验，待数据到达后由 watch(totalPages) 重算。
+  if (props.total <= 0) {
+    currentPage.value = page;
+    return;
+  }
   const maxPage = Math.max(totalPages.value, 1);
   currentPage.value = Math.min(page, maxPage);
 };
@@ -194,6 +202,10 @@ watch(
   () => props.page,
   () => checkCurrentPage(),
 );
+
+// total 就绪后重算一次：只有此时才能正确判断页码是否越界，
+// 并保证「高亮页 == 列表页」不被冷启动的空索引破坏。
+watch(totalPages, () => checkCurrentPage());
 </script>
 
 <style lang="scss" scoped>

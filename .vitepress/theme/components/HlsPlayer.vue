@@ -26,6 +26,9 @@ const props = defineProps({
 const container = ref(null)
 const video = ref(null)
 let observer = null
+// hls.js 实例必须由组件持有：它内部有 loader / 定时器 / 事件监听，
+// 局部常量会让它在组件卸载后无法 destroy（SPA 路由切换即泄漏）。
+let hls = null
 
 // 全局缓存 HLS.js 加载 Promise，避免重复加载
 let hlsJsLoader = null
@@ -59,7 +62,7 @@ async function initPlayer() {
     // 动态加载 HLS.js，仅加载一次
     const Hls = await loadHlsJsOnce()
     if (Hls.isSupported()) {
-      const hls = new Hls()
+      hls = new Hls()
       hls.loadSource(props.src)
       hls.attachMedia(video.value)
     } else {
@@ -77,13 +80,14 @@ async function initPlayer() {
 
 onMounted(() => {
   if (!('IntersectionObserver' in window)) {
-    initPlayer() // 不支持 IntersectionObserver 时直接初始化
+    // initPlayer 是 async：不接错误处理会在 HLS.js 加载失败时产生未处理的 rejection
+    initPlayer().catch((error) => console.error('HLS 播放器初始化失败：', error))
     return
   }
   observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
       if (entry.isIntersecting) {
-        initPlayer()
+        initPlayer().catch((error) => console.error('HLS 播放器初始化失败：', error))
         observer.disconnect()
         break
       }
@@ -94,5 +98,14 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (observer) observer.disconnect()
+  // 释放 hls.js 实例（loader / 定时器 / 媒体源），并清掉 video 的 src
+  if (hls) {
+    hls.destroy()
+    hls = null
+  }
+  if (video.value) {
+    video.value.pause()
+    video.value.removeAttribute('src')
+  }
 })
 </script>

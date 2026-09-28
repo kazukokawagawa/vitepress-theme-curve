@@ -33,13 +33,13 @@ const limitedReferences = computed(() => {
   //而在服务器端的 JavaScript 环境中，并没有浏览器提供的 window 对象。
   //最简单的解决方法是确保在客户端代码中访问 window
   //可以通过判断代码是否在浏览器环境中运行来避免在服务器端渲染时执行涉及 window 的代码
-  //使用 typeof window !== 'undefined' 来判断
-  onMounted(() => {
-  // 只有在浏览器环境才会执行这里的代码
-  if (typeof window !== 'undefined') {
-    const screenWidth = window.innerWidth;
-  }
-});
+  // ⚠️ 这里原本嵌了一个 onMounted（"避免 SSR 访问 window" 的旧写法）。
+  // computed 求值时没有活跃组件实例，Vue 会告警
+  // "onMounted is called when no active component instance"，且它创建的
+  // 局部变量会被立即丢弃 —— 已移除。
+  // 注意：screenWidth 目前没有任何地方赋值（恒为 0），下面的截断实际不生效
+  // （maxChars 为 NaN，比较恒为 false），标题保持完整。是否真正启用
+  // "按屏宽截断"属产品决定，未擅自改动。
   // 假设你想让标题占据屏幕宽度的某个百分比，例如 70%
   // 这里的 '16' 是一个估算值，代表一个汉字或英文字符的平均像素宽度。
   // 你需要根据你的字体大小和字体类型进行精确调整。

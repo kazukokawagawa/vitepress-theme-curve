@@ -25,8 +25,17 @@ export const createRssFile = async (config, themeConfig) => {
     updated: new Date(),
   });
   // 加载文章
+  // ⚠️ VitePress 的 createContentLoader **不读** config.mjs 的 srcExclude，
+  // 只硬编码忽略 node_modules/dist。若不在这里补齐，`_*.md`（config.mjs:113
+  // 注释承诺"绝不发布到站点"的仓库内部文件）会被排除出页面与 sitemap，
+  // 却仍然出现在 rss.xml 里，给出指向 404 的订阅条目。
+  // 另注意：loader 内部是 `{ ignore: [默认值], ...globOptions }`，ignore 属**整体覆盖**，
+  // 所以必须把默认的两项一起写上，否则等于把 node_modules/dist 放回来了。
   let posts = await createContentLoader("posts/**/*.md", {
     render: true,
+    globOptions: {
+      ignore: ["**/node_modules/**", "**/dist/**", "**/README.md", "**/TODO.md", "_*.md", "**/_*.md"],
+    },
   }).load();
   // 日期降序排序
   // frontmatter 的 date 可能缺失或非法，`new Date(undefined)` 会得到 NaN，

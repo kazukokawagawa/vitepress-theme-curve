@@ -123,6 +123,8 @@ import { usePostData } from "@/utils/usePostData.mjs";
 // 产物（globby@14 → @sindresorhus/merge-streams → node:stream），导致构建失败：
 //   "PassThrough" is not exported by "__vite-browser-external"
 import { toLocalDayTimestamp } from "@/utils/dateAnchor.mjs";
+// 同样必须从零依赖模块引入，理由同 dateAnchor.mjs
+import { normalizeList } from "@/utils/normalizeList.mjs";
 import PasswordProtect from "@/components/PasswordProtect.vue";
 
 const { page, theme, frontmatter } = useData();
@@ -155,8 +157,8 @@ const postMetaData = computed(() => {
     title: frontmatter.value.title || page.value.title,
     date,
     lastModified: page.value.lastUpdated,
-    tags: frontmatter.value.tags || [],
-    categories: frontmatter.value.categories || [],
+    tags: normalizeList(frontmatter.value.tags),
+    categories: normalizeList(frontmatter.value.categories),
     description: frontmatter.value.description,
     regularPath: page.value.relativePath ? `/${page.value.relativePath.replace(".md", ".html")}` : "",
     top: frontmatter.value.top,

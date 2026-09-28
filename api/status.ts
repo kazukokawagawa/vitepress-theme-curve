@@ -53,6 +53,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
+      // 上游挂死时不要拖到平台超时（那样客户端拿到的是 504 HTML 而不是 JSON）：
+      // 主动中止，让下面的 catch 返回 {"status":"error"} 的优雅降级。
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) {

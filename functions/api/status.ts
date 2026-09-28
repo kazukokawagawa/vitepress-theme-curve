@@ -56,6 +56,8 @@ export async function onRequestGet(context: any) {
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
+      // 与 api/status.ts 同一口径：上游挂死时主动中止，保证仍返回优雅的 JSON。
+      signal: AbortSignal.timeout(5000),
     });
 
     if (!response.ok) {

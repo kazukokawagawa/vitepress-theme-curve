@@ -17,7 +17,7 @@
  *
  * 背景：未加引号的 YAML 日期（`date: 2025-07-01`）会被 js-yaml 解析成
  * `2025-07-01T00:00:00.000Z`（**UTC 零点**）的 Date 对象。而显示端
- * （`Post.vue` / `PostList.vue` / `helper.mjs` / `getAllArchives`）一律用
+ * （`Post.vue` / `PostList.vue` / `helper.mjs` / `usePostData.mjs` 的归档年份分组）一律用
  * `getFullYear()/getMonth()/getDate()` 这类**本地**取值。两端锚点不一致，
  * 结果是 UTC 负时区（如 America/New_York）的访客看到的每篇日期都早一天，
  * 归档也会落到错误的年份。

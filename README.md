@@ -279,8 +279,8 @@ pnpm deploy:vercel
 - **密钥仍在版本控制中**：`.env` 至今仍被 Git 跟踪，其内容与 `HEAD` 完全一致，且 `.gitignore` **没有**忽略它（见下方[安全提示](#安全提示)）。
 - **`.eslintignore` 残留**：其中仍列有已删除的临时目录（`_fix2`、`_fix3`、`.dsh_baseline`、`_fix_t1`、`_t4_*`）等历史条目。
 - **跳转壳的重复内容**：`page.md`、`page/index.md`、`page/1.md`、`pages/index.md` 内容逐字节相同。`gray-matter` 以文件内容为键缓存解析结果，相同内容的文件会共享同一个 `frontmatter` 对象，历史上曾导致 canonical 标签跨页累积。构建配置现已在 `transformPageData` 中改为白名单重建（每条 canonical 都挂到本页自己的新数组上），但**共享 frontmatter 的根因仍在**，日后若在 `transformPageData` 里就地 `push` 新的 head 字段，同类问题会复现。
-- **构建期会写入工作区**：加载 `.vitepress/config.mjs` 时会重新生成 `public/data/postData.json`（该文件已 gitignore），因此运行 `dev`/`build` 后 `git status` 可能出现该文件的变动。
-- **`jumpRedirect` 未启用**：相关实现与 `/redirect.html` 已就位但默认关闭，站外链接中转能力需要自行验证后再开启。
+- **构建期会写入工作区（且目标文件仍被 Git 跟踪）**：加载 `.vitepress/config.mjs` 时会重新生成 `public/data/postData.json`，因此运行 `dev`/`build` 后 `git status` 必然出现该文件的变动。注意 `.gitignore` 里虽然写了 `public/data/postData.json`，但**该文件已被 Git 跟踪，ignore 规则对它不生效**（`git ls-files --error-unmatch public/data/postData.json` 可复现）；而产物里含 `lastModified`（`mtimeMs`，见 `getPostData.mjs`）这类机器相关字段，所以每次本地构建都会产生无法复现的 diff，`git add -A` 会把本机 mtime 提交进去。要真正忽略它需要 `git rm --cached` 并提交（属动被跟踪产物，需自行决定）。
+- **`jumpRedirect` 未启用，且开启前必须先修两处**：相关实现与 `/redirect.html` 已就位但默认关闭（`themeConfig.mjs` 的 `jumpRedirect.enable: false`）。实测该改写函数有两个已确认缺陷：① 用 `$(el).text()` 当 innerText，会**丢掉链接内部的元素**（如 `<i class="iconfont">`、`<img>`），带图标的站外链接会变成纯文本；② 不做同源判断，站内外全靠 `exclude` 类名名单区分，**新增的站内新窗口链接若忘了加类名就会被送去中转页**。开启前请先修这两处，否则会改坏既有的新窗口链接。
 - **`public/` 会被原样拷进产物**：`public/` 是**源目录**，其中的文件在构建时被逐份拷贝到 `.vitepress/dist` 根下（`postData.json` 就是这么进去的），因此不要在里面放需要手工维护的产物——下一次构建会用同名的源文件覆盖它。
 - **`robots.txt` 是静态文件**：`public/robots.txt` 会被原样拷贝到产物根目录，**不是**构建期生成；修改收录规则请直接改该文件。
 - **`themeConfig.mjs` 与「当前其实跑的是默认配置」**：根目录的覆盖文件已加入 `.gitignore`，不会被提交；如果丢失，构建会静默回退到 `.vitepress/theme/assets/themeConfig.mjs` 的默认值（仅打印一条 `console.warn`）。
@@ -289,7 +289,8 @@ pnpm deploy:vercel
 
 ## 安全提示
 
-- **`.env` 仍在版本控制中**：该文件已被提交，内容与 `HEAD` 一致，且 `.gitignore` 未忽略它（`git ls-files .env` 可复现）。处理顺序应当是：**先吊销/轮换其中所有凭据**，再把它移出跟踪（`git rm --cached .env` 并补进 `.gitignore`），最后按需用 `git filter-repo` 重写历史——顺序颠倒会让旧密钥在历史中继续有效。
+- **`.env` 仍在版本控制中**：该文件已被提交，内容与 `HEAD` 一致，且 `.gitignore` 未忽略它（`git ls-files .env` 可复现）。处理顺序应当是：**先吊销/轮换其中所有凭据**，再把它移出跟踪（`git rm --cached .env` 并补进 `.gitignore`），最后按需用 `git filter-repo` 重写历史——顺序颠倒会让旧密钥在历史中继续有效。注意 `git rm --cached .env` **并不会**清掉仓库里其它位置的同一凭据。
+- **同一个高德 Key 还有第二处明文**：除了 `.env:1`，`.vitepress/theme/assets/themeConfig.mjs` 的 `weatherkey` 注释块里也留了一份明文（`git grep -n "1d65cc630df1f212e1d2e928643e3974"` 可复现两处）。该字段已废弃（天气挂件现在读 `import.meta.env.VITE_WEATHER_KEY`），但注释里的明文会随仓库公开。轮换 Key 时两处都要处理，且因为 `VITE_` 变量会被打包进前端产物、天气请求由**访客浏览器**直连 `restapi.amap.com`，这个 Key 本质上是公开的、无法用域名/IP 白名单保护——实际风险是**当日 5000 次配额被烧掉导致天气挂件失效**，不涉及账户接管。
 - 站点内含个人化配置与统计、评论等服务凭据，公开部署前请逐项检查 `themeConfig.mjs`、`.env` 与 `api/`、`functions/` 下的环境变量读取。
 - 所有 `VITE_` 前缀的变量都会被**打包进前端产物**，对其调用方可见，只应放可公开的值；`BETTER_STACK_API_TOKEN` 只在服务端使用，切勿加 `VITE_` 前缀或写入前端代码。
 
