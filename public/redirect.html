@@ -227,13 +227,17 @@
           if (!encodedUrl) {
             throw new Error("url 参数为空");
           }
-          // 修复 Base64 在 URL 传递时 + 被当成空格的问题
-          encodedUrl = encodedUrl.replace(/ /g, "+");
-          // 解密 Base64
-          jumpLink = atob(encodedUrl);
-          urlDom.innerHTML = jumpLink;
+          // 兼容旧 Base64 与新的 URL-safe Base64
+          encodedUrl = encodedUrl.replace(/ /g, "+").replace(/-/g, "+").replace(/_/g, "/");
+          const bytes = Uint8Array.from(atob(encodedUrl), (char) => char.charCodeAt(0));
+          const target = new URL(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+          if (!/^https?:$/.test(target.protocol)) {
+            throw new Error("仅支持 HTTP/HTTPS 链接");
+          }
+          jumpLink = target.href;
+          urlDom.textContent = jumpLink;
           // 获取网址的主机名
-          const urlHostname = new URL(jumpLink).hostname;
+          const urlHostname = target.hostname;
           // 判断网址是否在黑名单中
           for (let i = 0; i < blacklist.length; i++) {
             const blackPattern = blacklist[i].replace(/\*/g, ".*");
@@ -261,8 +265,9 @@
           }
         } catch (error) {
           console.error(error);
+          jumpLink = undefined;
           jumpContent.remove();
-          urlDom.innerHTML = "获取跳转链接失败，请检查链接格式";
+          urlDom.textContent = "获取跳转链接失败，请检查链接格式";
         }
       };
       document.addEventListener("contextmenu", function (event) {

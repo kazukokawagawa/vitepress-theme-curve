@@ -90,6 +90,41 @@ export const loadCSS = (href, option = {}) => {
 };
 
 /**
+ * Encode a URL for use in a redirect query parameter.
+ * URL-safe Base64 keeps `+` and `/` from being reinterpreted by URL parsers.
+ * @param {string} value - URL to encode
+ * @returns {string} - URL-safe Base64 value
+ */
+const encodeRedirectUrl = (value) => {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(value, "utf-8").toString("base64url");
+  }
+
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+
+/**
+ * Check whether a link points to another origin.
+ * @param {string} href - Link URL
+ * @param {string} baseUrl - Current site URL
+ * @returns {boolean} - Whether the link is external
+ */
+const isExternalLink = (href, baseUrl) => {
+  try {
+    const url = new URL(href, baseUrl);
+    const base = new URL(baseUrl);
+    return /^https?:$/.test(url.protocol) && url.origin !== base.origin;
+  } catch {
+    return false;
+  }
+};
+
+/**
  * 跳转中转页
  * @param {string} html - 页面内容
  * @param {boolean} isDom - 是否为 DOM 对象
@@ -98,13 +133,17 @@ export const jumpRedirect = (html, themeConfig, isDom = false) => {
   try {
     // 是否为开发环境
     const isDev = process.env.NODE_ENV === "development";
-    if (isDev) return false;
+    if (isDev) return html;
     // 是否启用
     if (!themeConfig.jumpRedirect.enable) return html;
-    // 中转页地址
     const redirectPage = "/redirect.html";
+    const baseUrl = typeof window !== "undefined"
+      ? window.location.origin
+      : themeConfig.siteMeta?.site || "https://localhost";
+    const createRedirectHref = (href) =>
+      `${redirectPage}?url=${encodeURIComponent(encodeRedirectUrl(href))}`;
     // 排除的 className
-    const excludeClass = themeConfig.jumpRedirect.exclude;
+    const excludeClass = themeConfig.jumpRedirect.exclude || [];
     if (isDom) {
       if (typeof window === "undefined" || typeof document === "undefined") return false;
       // 所有链接
@@ -118,11 +157,9 @@ export const jumpRedirect = (html, themeConfig, isDom = false) => {
             return false;
           }
           const linkHref = link.getAttribute("href");
-          // 存在链接且非中转页
-          if (linkHref && !linkHref.includes(redirectPage)) {
-            // Base64
-            const encodedHref = btoa(linkHref);
-            const redirectLink = `${redirectPage}#url=${encodedHref}`;
+          // 只处理中转到外部站点的链接，避免误伤站内新窗口链接
+          if (linkHref && isExternalLink(linkHref, baseUrl) && !linkHref.includes(redirectPage)) {
+            const redirectLink = createRedirectHref(linkHref);
             // 保存原始链接
             link.setAttribute("original-href", linkHref);
             // 覆盖 href
@@ -136,35 +173,19 @@ export const jumpRedirect = (html, themeConfig, isDom = false) => {
       $("a[target='_blank']").each((_, el) => {
         const $a = $(el);
         const href = $a.attr("href");
-        const classesStr = $a.attr("class");
-        const innerText = $a.text();
-        // 检查是否包含排除的类
-        const classes = classesStr ? classesStr.trim().split(" ") : [];
-        if (excludeClass.some((className) => classes.includes(className))) {
+        const classes = ($a.attr("class") || "").split(/\s+/);
+        if (excludeClass.some((className) => classes.includes(className))) return;
+        // 只处理中转到外部站点的链接，避免误伤站内新窗口链接
+        if (!href || !isExternalLink(href, baseUrl) || href.includes(redirectPage)) {
           return;
         }
-        // 存在链接且非中转页
-        if (href && !href.includes(redirectPage)) {
-          // Base64 编码 href
-          const encodedHref = Buffer.from(href, "utf-8").toString("base64");
-          // 获取所有属性
-          const attributes = el.attribs;
-          // 重构属性字符串，保留原有属性
-          let attributesStr = "";
-          for (let attr in attributes) {
-            if (Object.prototype.hasOwnProperty.call(attributes, attr)) {
-              attributesStr += ` ${attr}="${attributes[attr]}"`;
-            }
-          }
-          // 构造新标签
-          const newLink = `<a href="${redirectPage}#url=${encodedHref}" original-href="${href}" ${attributesStr}>${innerText}</a>`;
-          // 替换原有标签
-          $a.replaceWith(newLink);
-        }
+        $a.attr("original-href", href);
+        $a.attr("href", createRedirectHref(href));
       });
       return $.html();
     }
   } catch (error) {
     console.error("处理链接时出错：", error);
+    return html;
   }
 };
