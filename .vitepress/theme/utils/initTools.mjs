@@ -61,6 +61,7 @@ const changeLoading = (option = {}) => {
   // 获取配置
   const { status = true, always = false } = option;
   // 开始加载
+  clearTimeout(loadingTimer);
   store.loadingStatus = status;
   // 是否不结束
   if (always) return;

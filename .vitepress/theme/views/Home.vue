@@ -182,7 +182,7 @@ watch(
 watch(totalPages, () => updateCurrentPage());
 
 watch(
-  () => store.loadingStatus,
+  () => store.isLoading,
   (val) => restoreScrollY(val),
 );
 </script>

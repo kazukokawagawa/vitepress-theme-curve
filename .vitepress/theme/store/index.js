@@ -13,7 +13,8 @@ export const mainStore = defineStore("main", {
       // banner
       bannerType: "half",
       // 加载状态
-      // 默认不阻塞 SSR 首屏，路由切换时再由客户端显式开启 Loading。
+      // 首屏等待文章索引就绪，路由加载状态独立管理。
+      initialLoading: true,
       loadingStatus: false,
       // 滚动高度
       scrollData: {
@@ -56,7 +57,9 @@ export const mainStore = defineStore("main", {
       backgroundUrl: "https://api.miaomc.cn/image/get",
     };
   },
-  getters: {},
+  getters: {
+    isLoading: (state) => state.initialLoading || state.loadingStatus,
+  },
   actions: {
     // 切换应用状态
     changeShowStatus(value, blur = true) {

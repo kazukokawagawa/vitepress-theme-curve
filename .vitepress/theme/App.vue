@@ -8,7 +8,7 @@
   <!-- 导航栏 -->
   <Nav />
   <!-- 主内容 -->
-  <main :class="['mian-layout', { loading: loadingStatus, 'is-post': isPostPage }]">
+  <main :class="['mian-layout', { loading: isLoading, 'is-post': isPostPage }]">
     <!-- 404 -->
     <NotFound v-if="page.isNotFound" />
     <!-- 首页 -->
@@ -22,8 +22,8 @@
     </template>
   </main>
   <!-- 页脚 -->
-  <FooterLink v-show="!loadingStatus" :showBar="isPostPage && !page.isNotFound" />
-  <Footer v-show="!loadingStatus" />
+  <FooterLink v-show="!isLoading" :showBar="isPostPage && !page.isNotFound" />
+  <Footer v-show="!isLoading" />
   <!-- 悬浮菜单 -->
   <Teleport to="body">
     <!-- 左侧菜单 -->
@@ -45,13 +45,15 @@ import { storeToRefs } from "pinia";
 import { mainStore, initializeCursor } from "@/store";
 import { calculateScroll, specialDayGray } from "@/utils/helper";
 import { ensureGlobalFontsLoaded } from "@/utils/fontLoader.mjs";
+import { usePostData } from "@/utils/usePostData.mjs";
 
 // const screenWidth = ref(0);
 const route = useRoute();
 const store = mainStore();
 const { frontmatter, page, theme } = useData();
-const { loadingStatus, footerIsShow, themeValue, themeType, backgroundType, fontFamily, fontSize } =
+const { isLoading, footerIsShow, themeValue, themeType, backgroundType, fontFamily, fontSize } =
   storeToRefs(store);
+const { loadPostData } = usePostData();
 let fontSwitchTaskId = 0;
 
 //2025.06.12更新：在 Next.js 的服务端渲染过程中，应用会在服务器端先进行渲染
@@ -153,7 +155,7 @@ watch(
   () => changeSiteFont(),
 );
 
-onMounted(() => {
+onMounted(async () => {
   initializeCursor();
   console.log(frontmatter.value, page.value, theme.value);
   // 全站置灰
@@ -170,6 +172,9 @@ onMounted(() => {
   window.addEventListener("copy", copyTip);
   // 监听系统颜色
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", changeSiteThemeType);
+  await loadPostData();
+  await nextTick();
+  store.initialLoading = false;
 });
 
 onBeforeUnmount(() => {

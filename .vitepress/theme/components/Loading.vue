@@ -1,12 +1,10 @@
 <template>
-  <Teleport to="body">
-    <Transition name="fade" mode="out-in">
-      <div v-if="loadingStatus" class="loading" @click="loadingStatus = false">
-        <img :src="theme.siteMeta.logo" class="logo" alt="loading-logo" />
-        <span :class="['tip', { show: showTip }]"> 一直显示？点击任意区域即可关闭 </span>
-      </div>
-    </Transition>
-  </Teleport>
+  <Transition name="fade" mode="out-in">
+    <div v-if="isLoading" class="loading" @click="dismissLoading">
+      <img :src="theme.siteMeta.logo" class="logo" alt="loading-logo" />
+      <span :class="['tip', { show: showTip }]"> 一直显示？点击任意区域即可关闭 </span>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -15,7 +13,13 @@ import { mainStore } from '@/store';
 
 const store = mainStore();
 const { theme } = useData();
-const { loadingStatus } = storeToRefs(store);
+const { isLoading } = storeToRefs(store);
+
+const dismissLoading = () => {
+  if (!showTip.value) return;
+  store.initialLoading = false;
+  store.loadingStatus = false;
+};
 
 // 显示提示
 const showTip = ref(false);
@@ -23,8 +27,9 @@ const showTimeOut = ref(null);
 
 // 监听加载状态
 watch(
-  () => loadingStatus.value,
+  () => isLoading.value,
   (val) => {
+    clearTimeout(showTimeOut.value);
     if (val) {
       showTimeOut.value = setTimeout(() => {
         showTip.value = true;
@@ -34,6 +39,7 @@ watch(
       clearTimeout(showTimeOut.value);
     }
   },
+  { immediate: typeof window !== "undefined" },
 );
 
 onBeforeUnmount(() => {
