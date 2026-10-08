@@ -46,7 +46,11 @@
       </div>
     </div>
     <div v-if="showBadgeSection" class="made-with-love">
-      <span>{{ badgeTitle }}</span>
+      <Transition name="fade" mode="out-in">
+        <span :key="showCommit ? 'commit' : 'title'" class="badge-title" @click="showCommit = !showCommit">{{
+          showCommit ? gitCommit : badgeTitle
+        }}</span>
+      </Transition>
       <div class="tech-badges">
         <div
           v-for="(badge, index) in techBadges"
@@ -123,6 +127,10 @@ const showBadgeSection = computed(() => {
   if (Array.isArray(badgeConfig.value)) return techBadges.value.length > 0;
   return badgeConfig.value.enable !== false && techBadges.value.length > 0;
 });
+
+// git commit hash injected at build time
+const gitCommit = __GIT_COMMIT__;
+const showCommit = ref(false);
 
 // 当前展开的徽标索引
 const expandedBadge = ref(null);
@@ -316,9 +324,15 @@ const toggleBadge = (index) => {
     align-items: center;
     padding: 1rem 0;
     gap: 1rem;
-    > span {
+    .badge-title {
       font-size: 18px;
       color: var(--main-font-second-color);
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s;
+      &:hover {
+        color: var(--main-color);
+      }
     }
     .tech-badges {
       display: flex;

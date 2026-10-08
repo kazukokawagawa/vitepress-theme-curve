@@ -9,6 +9,12 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import path from "path";
 import fs from "fs-extra";
+import { execSync } from "child_process";
+
+let gitCommit = "unknown";
+try {
+  gitCommit = execSync("git rev-parse --short HEAD").toString().trim();
+} catch {}
 
 // 获取全局数据
 const postData = await getAllPosts();
@@ -166,6 +172,9 @@ export default withPwa(
     },
     // vite
     vite: {
+      define: {
+        __GIT_COMMIT__: JSON.stringify(gitCommit),
+      },
       plugins: [
         AutoImport({
           imports: ["vue", "vitepress"],
