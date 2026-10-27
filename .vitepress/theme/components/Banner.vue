@@ -1,5 +1,5 @@
 <template>
-  <div v-if="type === 'text'" :class="['banner', bannerType]" id="main-banner">
+  <div v-if="type === 'text'" ref="bannerRoot" :class="['banner', bannerType]" id="main-banner">
     <h1 class="title-lockup" :aria-label="`${titleEn} ${cnText}`">
       <span class="title-stage">
         <span class="title-py" ref="titlePy" aria-hidden="true">
@@ -141,26 +141,46 @@ const cnText = computed(() => `${cnPrefix}${cnBrand.value}`);
 
 // 胶囊的尺寸与位置要用两段词的真实宽度（小赖为手写比例字体，em 估值不可靠），
 // 挂载后实测并写入 CSS 变量，动画直接引用；字体未就绪时用 CSS 里的 em 兜底。
+const bannerRoot = ref(null);
 const titlePy = ref(null);
 const morphWrap = ref(null);
 const morphLog = ref(null);
 const morphNote = ref(null);
+let layoutObserver = null;
+let isMobileViewport = false;
+let timelineStarted = false;
+
+// 只在数值真的变了才写，避免 ResizeObserver 因自身写入再次触发（写同样的值不会变，但留着更稳）
+function setMorphVar(name, value) {
+  if (!titlePy.value) return;
+  const next = `${Math.round(value * 100) / 100}px`;
+  if (titlePy.value.style.getPropertyValue(name) !== next) {
+    titlePy.value.style.setProperty(name, next);
+  }
+}
+
+// 返回 true 表示这次测量有效。SPA 返回首页时，主题会先把 <main> 设为 display:none
+// 再挂载新页面，隐藏状态下所有尺寸都是 0 —— 一旦把 0 写进 CSS 变量，
+// 标题整行就会塌成一片（这就是“返回首页后动画乱套”的根因），所以这里必须能识别并跳过。
 function measureMorph() {
-  if (!titlePy.value || !morphWrap.value || !morphLog.value || !morphNote.value) return;
+  if (!titlePy.value || !morphWrap.value || !morphLog.value || !morphNote.value) return false;
   const pyRect = titlePy.value.getBoundingClientRect();
+  if (pyRect.width <= 0) return false;
   const morphRect = morphWrap.value.getBoundingClientRect();
   const em = parseFloat(getComputedStyle(titlePy.value).fontSize) || 0;
   const logW = morphLog.value.offsetWidth;
   const noteW = morphNote.value.offsetWidth;
+  if (!em || !logW || !noteW) return false;
   // py-morph 的左缘（= “L” 的起笔）到整行左缘的距离，只取决于 “Chiyu's ” 的宽度，全程稳定
   const capLeft = morphRect.left - pyRect.left;
   // 整行按 Note 的宽度占位：book 从第一帧起就停在最终位置，全程零位移
-  titlePy.value.style.setProperty("--note-w", `${noteW}px`);
+  setMorphVar("--note-w", noteW);
   // 胶囊脚印 = Log 与 Note 的最大宽度；左侧多留 0.12em 盖住 L 的起笔，
   // 右缘正好落在词尾，不越过后面 book 的字形
   const padL = 0.12 * em;
-  titlePy.value.style.setProperty("--cover-left", `${capLeft - padL}px`);
-  titlePy.value.style.setProperty("--cover-w", `${Math.max(logW, noteW) + padL}px`);
+  setMorphVar("--cover-left", capLeft - padL);
+  setMorphVar("--cover-w", Math.max(logW, noteW) + padL);
+  return true;
 }
 
 // 标题动画在 10.08s 结束（平移 8.95s 开始、0.6s 完成；前缀 9.52s 起逐字落，最后一字 10.08s 落定），
@@ -174,6 +194,50 @@ const titleAnimationDone = ref(false);
 let titleAnimMs = TITLE_ANIMATION_MS;
 let titleStartedAt = 0;
 let titleDoneTimer = null;
+
+// 标题真正参与布局后才启动时间线：display:none 期间 CSS 动画不会推进，
+// 但 JS 的计时器会 —— 以挂载时间起算的话，一言会比画面早 0.3~0.8s 出现。
+function startTimeline() {
+  if (timelineStarted) return;
+  timelineStarted = true;
+  titleStartedAt = Date.now();
+  // 动画期间只缓存一句，不切换下方文案
+  fetchHitokoto();
+  titleDoneTimer = setTimeout(() => {
+    titleAnimationDone.value = true;
+  }, titleAnimMs);
+  startHitokotoCycle();
+}
+
+// 布局一旦就绪（首次可见 / 窗口尺寸变化 / 字号设置变化）就补测一次尺寸。
+// 用 ResizeObserver 而不是一次性 rAF：SPA 返回时组件是在隐藏状态下挂载的，
+// 那一次测量必然拿不到宽度，只能等 <main> 从 display:none 恢复时再测。
+function handleLayout() {
+  if (!bannerRoot.value) return;
+  if (bannerRoot.value.getBoundingClientRect().width <= 0) return;
+  if (!isMobileViewport) measureMorph();
+  startTimeline();
+}
+
+function observeLayout() {
+  handleLayout();
+  if (typeof ResizeObserver !== "undefined") {
+    layoutObserver = new ResizeObserver(handleLayout);
+    layoutObserver.observe(bannerRoot.value);
+  } else {
+    // 老浏览器没有 ResizeObserver：用有上限的 rAF 轮询兜底，别让时间线一直不启动
+    let tries = 0;
+    const retry = () => {
+      handleLayout();
+      if (!timelineStarted && ++tries < 600) requestAnimationFrame(retry);
+    };
+    requestAnimationFrame(retry);
+  }
+  // 字体就绪后字形宽度会变，再测一次（measureMorph 自己会判断能不能测）
+  if (!isMobileViewport && document.fonts?.ready) {
+    document.fonts.ready.then(() => requestAnimationFrame(() => measureMorph()));
+  }
+}
 
 // “o” 胶囊内轮播的图标，顺序对齐 WorkBuddy 首页标题：
 // ∞ → 下载/波浪 → 公文包 → 公文包（勾） → </> → >_
@@ -297,6 +361,12 @@ async function autoToggleHitokoto() {
 // 首次延迟 = 标题动画时长 + 3s；动画结束后仍有 3s 让定稿画面停留。
 function startHitokotoCycle() {
   if (disableAuto.value) return;
+  // 时间线还没启动（标题仍被隐藏）时不要抢先计时，否则会挂上第二个定时器
+  if (!timelineStarted) return;
+  if (hitokotoInitialTimeout.value) {
+    clearTimeout(hitokotoInitialTimeout.value);
+    hitokotoInitialTimeout.value = null;
+  }
   const elapsed = titleStartedAt ? Date.now() - titleStartedAt : 0;
   const delay = Math.max(titleAnimMs + 3000 - elapsed, 0);
   hitokotoInitialTimeout.value = setTimeout(async () => {
@@ -365,29 +435,18 @@ const bannerType = ref(store.bannerType);
 watch(() => store.bannerType, val => (bannerType.value = val));
 
 onMounted(() => {
-  if (props.type === 'text') {
-    // 手机端没有英文/胶囊这一段，胶囊的实测宽度也就不需要了
-    const isMobileViewport = window.matchMedia(MOBILE_QUERY).matches;
-    titleAnimMs = isMobileViewport ? MOBILE_TITLE_ANIMATION_MS : TITLE_ANIMATION_MS;
-    // 动画期间只缓存一句，不切换下方文案
-    titleStartedAt = Date.now();
-    fetchHitokoto();
-    titleDoneTimer = setTimeout(() => {
-      titleAnimationDone.value = true;
-    }, titleAnimMs);
-    startHitokotoCycle();
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    if (!isMobileViewport) {
-      // 实测 Log / Note 词宽；小赖字体就绪后再测一次，避免回退字体导致宽度偏差
-      requestAnimationFrame(measureMorph);
-      if (document.fonts?.ready) {
-        document.fonts.ready.then(() => requestAnimationFrame(measureMorph));
-      }
-    }
-  }
+  if (props.type !== 'text') return;
+  // 手机端没有英文/胶囊这一段，胶囊的实测宽度也就不需要了
+  isMobileViewport = window.matchMedia(MOBILE_QUERY).matches;
+  titleAnimMs = isMobileViewport ? MOBILE_TITLE_ANIMATION_MS : TITLE_ANIMATION_MS;
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  // 实测 Log / Note 词宽并启动时间线，但都要等标题真正可见（见 observeLayout）
+  observeLayout();
 });
 
 onBeforeUnmount(() => {
+  layoutObserver?.disconnect();
+  layoutObserver = null;
   pauseHitokotoCycle();
   if (titleDoneTimer) {
     clearTimeout(titleDoneTimer);
