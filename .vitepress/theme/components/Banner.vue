@@ -38,7 +38,7 @@
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2.2"
+              stroke-width="1.8"
               stroke-linecap="round"
               stroke-linejoin="round"
               aria-hidden="true"
@@ -556,8 +556,10 @@ onBeforeUnmount(() => {
       .o-icon {
         position: absolute;
         inset: 0;
-        width: 0.66em;
-        height: 0.66em;
+        // 图标占胶囊高度的 0.9/1.12 ≈ 80%，上下各留 0.11em 内边距；
+        // 线宽同步从 2.2 收到 1.8，放大后笔画粗细才和标题的加粗字重对得上
+        width: 0.9em;
+        height: 0.9em;
         margin: auto;
         color: #fff;
         opacity: 0;
