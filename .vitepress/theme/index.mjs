@@ -30,7 +30,7 @@ const Theme = {
     let isInitialRoute = true;
     router.onBeforeRouteChange = (to) => {
       if (isInitialRoute) return;
-      routeChange("before", to);
+      return routeChange("before", to);
     };
     router.onAfterRouteChanged = (to) => {
       if (isInitialRoute) {
