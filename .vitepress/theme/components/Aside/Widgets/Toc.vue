@@ -25,6 +25,7 @@
 
 <script setup>
 import { mainStore } from "@/store";
+import { smoothScrolling } from "@/utils/helper";
 import { throttle } from "lodash-es";
 
 const route = useRoute();
@@ -99,7 +100,7 @@ const scrollToHeader = (id) => {
     if (!headerDom || !postDom.value) return false;
     const headerTop = headerDom.offsetTop;
     const scrollHeight = headerTop + postDom.value.offsetTop - 80;
-    window.scroll({ top: scrollHeight, behavior: "smooth" });
+    smoothScrolling(scrollHeight);
   } catch (error) {
     console.error("目录滚动失败：", error);
   }

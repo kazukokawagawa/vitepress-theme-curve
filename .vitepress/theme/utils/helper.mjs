@@ -1,4 +1,5 @@
 import { mainStore } from "@/store";
+import { scrollTo } from "@/utils/lenis.mjs";
 import { throttle } from "lodash-es";
 
 /**
@@ -34,27 +35,14 @@ export const calculateScroll = throttle(
  */
 export const smoothScrolling = (target = 0) => {
   try {
-    if (typeof window === "undefined") return false;
-    if (typeof target === "number") {
-      // 滚动至指定高度
-      window.scrollTo({ top: target, behavior: "smooth" });
-    } else if (target instanceof HTMLElement) {
-      // 滚动至元素
-      const top = target.getBoundingClientRect().top - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    } else if (typeof target === "string" && target.startsWith("#")) {
-      // 滚动至 ID
-      const element = document.querySelector(target);
-      if (element) {
-        const top = element.getBoundingClientRect().top - 80;
-        window.scrollTo({ top, behavior: "smooth" });
-      }
-    } else {
-      // 滚动至顶部
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (typeof target === "number") return scrollTo(target);
+    if (target instanceof HTMLElement || (typeof target === "string" && target.startsWith("#"))) {
+      return scrollTo(target, { offset: -80 });
     }
+    return scrollTo(0);
   } catch (error) {
     console.error("平滑滚动出错：", error);
+    return false;
   }
 };
 

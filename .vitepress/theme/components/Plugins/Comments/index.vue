@@ -21,6 +21,8 @@
 </template>
 
 <script setup>
+import { smoothScrolling } from "@/utils/helper";
+
 const { theme } = useData();
 const router = useRouter();
 const props = defineProps({
@@ -35,9 +37,7 @@ const mainCommentRef = ref(null);
 // 滚动至评论
 const scrollToComments = () => {
   if (!mainCommentRef.value) return false;
-  const elementRect = mainCommentRef.value.getBoundingClientRect();
-  const elementTop = elementRect.top + window.scrollY;
-  window.scrollBy({ top: elementTop - 80, behavior: "smooth" });
+  smoothScrolling(mainCommentRef.value);
 };
 
 defineExpose({ scrollToComments });

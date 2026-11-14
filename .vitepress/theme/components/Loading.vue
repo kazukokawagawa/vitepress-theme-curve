@@ -1,5 +1,5 @@
 <template>
-  <Transition name="loading-curtain" mode="out-in" @after-enter="finishCurtainEntry">
+  <Transition :name="transitionName" mode="out-in" @after-enter="finishCurtainEntry">
     <div v-if="showCurtain" class="loading" @click="dismissLoading">
       <div class="loading-title" role="status">{{ loadingTitle }}</div>
       <span :class="['tip', { show: showTip }]"> 一直显示？点击任意区域即可关闭 </span>
@@ -18,7 +18,9 @@ const { isLoading } = storeToRefs(store);
 
 const loadingTitle = computed(() => `你好，欢迎来到${theme.value.siteMeta.title || "池鱼小栈"}`);
 
-const showCurtain = ref(false);
+// 刷新和初次加载直接显示遮罩；每轮加载固定动画类型，直到退出结束。
+const transitionName = ref(store.initialLoading ? "fade" : "loading-curtain");
+const showCurtain = ref(isLoading.value);
 const isCurtainEntering = ref(false);
 const pendingCurtainExit = ref(false);
 
@@ -26,6 +28,7 @@ const syncCurtain = (loading) => {
   if (loading) {
     pendingCurtainExit.value = false;
     if (!showCurtain.value) {
+      transitionName.value = store.initialLoading ? "fade" : "loading-curtain";
       isCurtainEntering.value = true;
       showCurtain.value = true;
     } else if (!isCurtainEntering.value) {
@@ -60,10 +63,10 @@ const dismissLoading = () => {
 const showTip = ref(false);
 const showTimeOut = ref(null);
 
-// 监听加载状态
+// 首屏遮罩显示期间，路由开始加载也需要放行已被遮住的页面切换。
 watch(
-  () => isLoading.value,
-  (val) => {
+  [isLoading, () => store.loadingStatus],
+  ([val]) => {
     syncCurtain(val);
     clearTimeout(showTimeOut.value);
     if (val) {

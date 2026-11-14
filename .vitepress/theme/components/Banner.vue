@@ -113,6 +113,7 @@
 <script setup>
 import { mainStore } from '@/store';
 import { getHitokoto } from '@/api';
+import { smoothScrolling } from '@/utils/helper';
 
 const store = mainStore();
 const { theme } = useData();
@@ -427,7 +428,7 @@ function handleVisibilityChange() {
 function scrollToHome() {
   const bannerDom = document.getElementById('main-banner');
   if (!bannerDom) return;
-  scrollTo({ top: bannerDom.offsetHeight, behavior: 'smooth' });
+  smoothScrolling(bannerDom.offsetHeight);
 }
 
 // 同步外部 store 的 bannerType

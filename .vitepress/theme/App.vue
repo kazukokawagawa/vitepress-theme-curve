@@ -44,6 +44,7 @@
 import { storeToRefs } from "pinia";
 import { mainStore, initializeCursor } from "@/store";
 import { calculateScroll, specialDayGray } from "@/utils/helper";
+import { destroyLenis, initLenis } from "@/utils/lenis.mjs";
 import { ensureGlobalFontsLoaded } from "@/utils/fontLoader.mjs";
 import { usePostData } from "@/utils/usePostData.mjs";
 
@@ -157,6 +158,7 @@ watch(
 
 onMounted(async () => {
   try {
+    initLenis();
     initializeCursor();
     // 全站置灰
     specialDayGray();
@@ -179,6 +181,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  destroyLenis();
   window.removeEventListener("scroll", calculateScroll);
   window.removeEventListener("contextmenu", openRightMenu);
 });

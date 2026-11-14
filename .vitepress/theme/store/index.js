@@ -13,8 +13,8 @@ export const mainStore = defineStore("main", {
       // banner
       bannerType: "half",
       // 加载状态
-      // 文章索引随静态 HTML 一起生成，首屏无需等待客户端加载。
-      initialLoading: false,
+      // 刷新和初次加载显示遮罩，由 App 初始化完成后关闭。
+      initialLoading: true,
       loadingStatus: false,
       // 滚动高度
       scrollData: {
