@@ -180,4 +180,15 @@ onBeforeUnmount(() => {
 .loading-curtain-leave-to {
   transform: translateX(-100%);
 }
+/** 
+@media (max-width: 768px) {
+  .loading-curtain-enter-from {
+    transform: translateY(-100%);
+  }
+
+  .loading-curtain-leave-to {
+    transform: translateY(100%);
+  }
+}
+  */
 </style>
