@@ -94,6 +94,12 @@
       box-shadow: 0 0 40px 6px #ff384270;
     }
   }
+  @supports (corner-shape: squircle) {
+    .reward-btn {
+      border-radius: 32px;
+      corner-shape: squircle;
+    }
+  }
 }
 .reward-card {
   .thank {

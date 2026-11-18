@@ -122,6 +122,12 @@ const randomJump = () => {
           }
         }
       }
+      @supports (corner-shape: squircle) {
+        .menu-item {
+          border-radius: 16px;
+          corner-shape: squircle;
+        }
+      }
     }
     .link-group {
       position: absolute;
