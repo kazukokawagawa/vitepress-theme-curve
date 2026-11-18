@@ -8,7 +8,7 @@
   <!-- 导航栏 -->
   <Nav />
   <!-- 主内容 -->
-  <main :class="['mian-layout', { loading: isLoading, 'is-post': isPostPage }]">
+  <main :class="['mian-layout', { 'is-post': isPostPage }]">
     <!-- 404 -->
     <NotFound v-if="page.isNotFound" />
     <!-- 首页 -->
@@ -22,8 +22,8 @@
     </template>
   </main>
   <!-- 页脚 -->
-  <FooterLink v-show="!isLoading" :showBar="isPostPage && !page.isNotFound" />
-  <Footer v-show="!isLoading" />
+  <FooterLink :showBar="isPostPage && !page.isNotFound" />
+  <Footer />
   <!-- 悬浮菜单 -->
   <Teleport to="body">
     <!-- 左侧菜单 -->
@@ -44,6 +44,7 @@
 import { storeToRefs } from "pinia";
 import { mainStore, initializeCursor } from "@/store";
 import { calculateScroll, specialDayGray } from "@/utils/helper";
+import { destroyLenis, initLenis } from "@/utils/lenis.mjs";
 import { ensureGlobalFontsLoaded } from "@/utils/fontLoader.mjs";
 import { usePostData } from "@/utils/usePostData.mjs";
 
@@ -51,7 +52,7 @@ import { usePostData } from "@/utils/usePostData.mjs";
 const route = useRoute();
 const store = mainStore();
 const { frontmatter, page, theme } = useData();
-const { isLoading, footerIsShow, themeValue, themeType, backgroundType, fontFamily, fontSize } =
+const { footerIsShow, themeValue, themeType, backgroundType, fontFamily, fontSize } =
   storeToRefs(store);
 const { loadPostData } = usePostData();
 let fontSwitchTaskId = 0;
@@ -157,6 +158,7 @@ watch(
 
 onMounted(async () => {
   try {
+    initLenis();
     initializeCursor();
     // 全站置灰
     specialDayGray();
@@ -179,6 +181,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  destroyLenis();
   window.removeEventListener("scroll", calculateScroll);
   window.removeEventListener("contextmenu", openRightMenu);
 });
@@ -194,9 +197,6 @@ onBeforeUnmount(() => {
   animation: show 0.5s forwards;
   animation-duration: 0.5s;
   display: block;
-  &.loading {
-    display: none;
-  }
   @media (max-width: 768px) {
     padding: 1rem 1.5rem;
     &.is-post {

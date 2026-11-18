@@ -4,6 +4,18 @@ import { jumpRedirect } from "./commonTools.mjs";
 // 必要数据
 let loadingTimer = null;
 let lastPathName = null;
+let loadingCoverResolvers = [];
+
+export const waitForLoadingCover = () =>
+  new Promise((resolve) => {
+    loadingCoverResolvers.push(resolve);
+  });
+
+export const resolveLoadingCover = () => {
+  const resolvers = loadingCoverResolvers;
+  loadingCoverResolvers = [];
+  resolvers.forEach((resolve) => resolve());
+};
 
 // 是否仅触发跳转后
 let isOnlyAfter = false;
@@ -33,8 +45,10 @@ export const routeChange = (type, to) => {
     // const isSame = isSamePage(to);
     // 更改上次路径
     lastPathName = new URL(to, window.location.origin).pathname;
-    // 开始动画
+    // 开始动画，并等待遮罩完全覆盖页面后再切换路由。
+    const coverPromise = waitForLoadingCover();
     changeLoading({ always: true });
+    return coverPromise;
   }
   // 跳转后
   else if (type === "after") {

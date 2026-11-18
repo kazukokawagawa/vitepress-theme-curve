@@ -31,6 +31,7 @@
 
 <script setup>
 import { mainStore } from "@/store";
+import { smoothScrolling } from "@/utils/helper";
 import { useDesktopAside } from "@/utils/useDesktopAside.mjs";
 import { usePostData } from "@/utils/usePostData.mjs";
 
@@ -152,10 +153,7 @@ const restoreScrollY = (val) => {
   nextTick().then(() => {
     console.log("滚动位置：", scrollY);
     // 平滑滚动
-    window.scrollTo({
-      top: scrollY,
-      behavior: "smooth",
-    });
+    smoothScrolling(scrollY);
     // 清除滚动位置
     store.lastScrollY = 0;
   });
