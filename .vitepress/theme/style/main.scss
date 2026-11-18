@@ -274,7 +274,7 @@ a {
 // 通用卡片
 .s-card {
   padding: 0.8rem;
-  border-radius: 16px;
+    border-radius: 16px;
   background-color: var(--main-card-background);
   border: 1px solid var(--main-card-border);
   box-shadow: 0 8px 16px -4px var(--main-border-shadow);
@@ -384,5 +384,13 @@ a {
 
   @media (max-width: 768px) {
     display: none !important;
+  }
+}
+
+@supports (corner-shape: squircle) {
+  .s-card,
+  .tk-avatar-img {
+    border-radius: 32px;
+    corner-shape: squircle;
   }
 }

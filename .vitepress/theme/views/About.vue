@@ -513,6 +513,12 @@ onMounted(() => {
         }
       }
     }
+    @supports (corner-shape: squircle) {
+      .about-item {
+        border-radius: 24px;
+        corner-shape: squircle;
+      }
+    }
     &:last-child {
       margin-bottom: 0;
     }
