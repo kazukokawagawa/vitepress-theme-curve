@@ -98,6 +98,12 @@ const linkData = [
         desc: "A gift for all Transgender community",
         url: "https://mtf.lgbt/",
       },
+      {
+        name: "FireGuoの小窝",
+        avatar: "https://fireguo.com/upload/IMG_20261007_091816.png",
+        desc: "沧海桑田，人也是",
+        url: "https://fireguo.com/",
+      },
     ],
   },
     // 丢失
