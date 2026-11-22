@@ -100,7 +100,7 @@ const linkData = [
       },
       {
         name: "FireGuoの小窝",
-        avatar: "https://fireguo.com/upload/IMG_20261007_091816.png",
+        avatar: "/images/friend/FireGuo.webp",
         desc: "沧海桑田，人也是",
         url: "https://fireguo.com/",
       },
