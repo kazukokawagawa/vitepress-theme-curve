@@ -73,9 +73,16 @@
           <span :style="{ width: `${tenYearInfo?.progress ?? 0}%` }" />
         </div>
         <div class="ten-year-details">
-          <div class="ten-year-date">
-            <span class="detail-label">起点 · 建站日</span>
-            <strong>{{ tenYearInfo?.startText || String(theme.since || "—") }}</strong>
+          <div class="ten-year-dates">
+            <div class="ten-year-date">
+              <span class="detail-label">起点 · 建站日</span>
+              <strong>{{ tenYearInfo?.startText || String(theme.since || "—") }}</strong>
+            </div>
+            <span class="ten-year-date-arrow" aria-hidden="true">→</span>
+            <div class="ten-year-date end-date">
+              <span class="detail-label">约定终点</span>
+              <strong>{{ tenYearInfo?.deadlineText || "—" }}</strong>
+            </div>
           </div>
           <div class="ten-year-stat">
             <strong>{{ tenYearInfo?.elapsedDays ?? "—" }}</strong>
@@ -90,10 +97,6 @@
           >
             <strong>{{ tenYearInfo?.remainingText ?? "—" }}</strong>
             <span>{{ tenYearInfo?.remainingLabel ?? "剩余时间" }}</span>
-          </div>
-          <div class="ten-year-date end-date">
-            <span class="detail-label">约定终点</span>
-            <strong>{{ tenYearInfo?.deadlineText || "—" }}</strong>
           </div>
         </div>
       </div>
@@ -416,10 +419,23 @@ onMounted(() => {
 
         .ten-year-details {
           display: grid;
-          grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+          grid-template-columns: minmax(0, 1.7fr) repeat(2, minmax(0, 1fr));
           align-items: center;
           gap: 1rem;
           margin-top: 1.3rem;
+        }
+
+        .ten-year-dates {
+          display: flex;
+          min-width: 0;
+          align-items: center;
+          gap: 0.8rem;
+        }
+
+        .ten-year-date-arrow {
+          flex-shrink: 0;
+          color: var(--main-color);
+          opacity: 0.7;
         }
 
         .ten-year-date,
@@ -439,9 +455,6 @@ onMounted(() => {
         }
 
         .ten-year-stat {
-          padding-left: 1rem;
-          border-left: 1px solid var(--main-card-border);
-
           &.compact strong {
             font-size: 1rem;
             letter-spacing: -0.02em;
@@ -765,8 +778,18 @@ onMounted(() => {
             gap: 1rem 0.75rem;
           }
 
+          .ten-year-dates {
+            grid-column: 1 / -1;
+            justify-content: space-between;
+            gap: 0.5rem;
+          }
+
+          .ten-year-date-arrow {
+            margin: 0 0.15rem;
+          }
+
           .ten-year-stat {
-            padding-left: 0.75rem;
+            padding-left: 0;
           }
 
           .ten-year-date strong {
