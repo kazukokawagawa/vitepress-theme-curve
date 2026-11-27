@@ -2,9 +2,10 @@
   <aside class="main-aside">
     <Hello v-if="theme.aside.hello.enable" class="weidgets" />
     <div class="sticky">
-      <TenYear
+      <Timing
         v-if="showTenYear && theme.aside.tenYear?.enable"
         class="weidgets"
+        show-ten-year
       />
       <Toc v-if="theme.aside.toc.enable && showToc" class="weidgets" />
   <Weather
@@ -13,7 +14,7 @@
     @fetch-error="onWeatherError"
   />
       <Countdown v-if="theme.aside.countDown.enable" class="weidgets" />
-      <Timing v-if="theme.aside.timing.enable" class="weidgets" />
+      <Timing v-if="theme.aside.timing.enable && !showTenYear" class="weidgets" />
       <!-- HelloGithub 热榜 -->
     <HelloGithubHot
       v-if="theme.aside.HelloGithub.enable && showHot"
