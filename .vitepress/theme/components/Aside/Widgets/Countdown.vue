@@ -1,6 +1,9 @@
 <template>
   <!-- 倒计时 -->
-  <div v-if="theme.aside.countDown.enable" class="count-down s-card">
+  <div
+    v-if="theme.aside.countDown.enable"
+    :class="['count-down', 's-card', { 'has-ten-year-inline': showInlineTenYear }]"
+  >
     <div class="count-left">
       <span class="text"> 距离 </span>
       <span class="name">{{ theme.aside.countDown.data.name }}</span>
@@ -26,7 +29,7 @@
             <span :class="['remaining', { many: item.percentage >= 60 }]">
               <span class="tip">还剩</span>
               {{ item.remaining }}
-              <span class="tip">天</span>
+              <span class="tip">{{ item.remainingUnit }}</span>
             </span>
           </div>
         </div>
@@ -50,7 +53,7 @@
           </div>
           <div class="ten-year-inline-summary">
             <span>已同行 {{ tenYearInfo.elapsedDays ?? "—" }} 天</span>
-            <span>{{ tenYearInfo.complete ? "十年之约完成" : `剩余 ${tenYearInfo.remainingDays ?? "—"} 天` }}</span>
+            <span>{{ tenYearInfo.complete ? "十年之约完成" : `还剩 ${tenYearInfo.remainingText}` }}</span>
           </div>
         </div>
       </template>
@@ -66,8 +69,7 @@ import { getTenYearInfo } from "@/utils/tenYear.mjs";
 const { theme } = useData();
 
 // 倒计时数据：基于浏览器本地时钟实时计算，SSR 阶段不输出。
-// 四行的「还剩」统一按天显示；当日行的百分比按分钟推进，
-// 所以 60s 刷新能让它每分钟都动（改前是整点才跳），同时不必每秒重算。
+// 剩余不足一天时用小时显示；今日进度按分钟更新，因此无需每秒重算。
 const { now } = useClientNow({ interval: 60 * 1000 });
 const remainData = computed(() => (now.value ? getTimeRemaining(now.value) : null));
 const showInlineTenYear = computed(
@@ -83,6 +85,9 @@ const tenYearInfo = computed(() =>
   display: flex;
   flex-direction: row;
   align-items: center;
+  &.has-ten-year-inline {
+    align-items: flex-start;
+  }
   .count-left {
     position: relative;
     display: flex;
@@ -113,6 +118,7 @@ const tenYearInfo = computed(() =>
       content: "";
       position: absolute;
       right: -0.8rem;
+      top: 10%;
       width: 2px;
       height: 80%;
       background-color: var(--main-card-border);
@@ -173,48 +179,48 @@ const tenYearInfo = computed(() =>
           }
         }
       }
-      .ten-year-inline {
-        margin-top: 0.55rem;
-        padding-top: 0.55rem;
-        border-top: 1px solid var(--main-card-border);
+    }
+    .ten-year-inline {
+      margin-top: 0.55rem;
+      padding-top: 0.55rem;
+      border-top: 1px solid var(--main-card-border);
+    }
+    .ten-year-inline-heading,
+    .ten-year-inline-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .ten-year-inline-heading {
+      margin-bottom: 0.35rem;
+      color: var(--main-font-color);
+      font-size: 0.78rem;
+      font-weight: 600;
+      strong {
+        color: var(--main-color);
+        font-variant-numeric: tabular-nums;
       }
-      .ten-year-inline-heading,
-      .ten-year-inline-summary {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+    }
+    .ten-year-inline-progress {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--main-color-bg);
+      span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--main-color);
+        transition: width 0.6s ease;
       }
-      .ten-year-inline-heading {
-        margin-bottom: 0.35rem;
-        color: var(--main-font-color);
-        font-size: 0.78rem;
-        font-weight: 600;
-        strong {
-          color: var(--main-color);
-          font-variant-numeric: tabular-nums;
-        }
-      }
-      .ten-year-inline-progress {
-        height: 5px;
-        overflow: hidden;
-        border-radius: 999px;
-        background: var(--main-color-bg);
-        span {
-          display: block;
-          height: 100%;
-          border-radius: inherit;
-          background: var(--main-color);
-          transition: width 0.6s ease;
-        }
-      }
-      .ten-year-inline-summary {
-        flex-wrap: wrap;
-        margin-top: 0.35rem;
-        color: var(--main-font-second-color);
-        font-size: 0.65rem;
-        line-height: 1.4;
-      }
+    }
+    .ten-year-inline-summary {
+      flex-wrap: wrap;
+      margin-top: 0.35rem;
+      color: var(--main-font-second-color);
+      font-size: 0.65rem;
+      line-height: 1.4;
     }
   }
   &:hover {

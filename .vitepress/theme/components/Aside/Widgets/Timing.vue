@@ -86,9 +86,9 @@ const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
         <strong>{{ tenYearInfo.elapsedDays ?? "—" }}</strong>
         <span>已同行天数</span>
       </div>
-      <div class="ten-year-stat remaining">
-        <strong>{{ tenYearInfo.complete ? "完成" : tenYearInfo.remainingDays ?? "—" }}</strong>
-        <span>{{ tenYearInfo.complete ? "十年之约" : "剩余天数" }}</span>
+      <div :class="['ten-year-stat', 'remaining', { compact: tenYearInfo.remainingLabel === '剩余时间' }]">
+        <strong>{{ tenYearInfo.remainingText }}</strong>
+        <span>{{ tenYearInfo.remainingLabel }}</span>
       </div>
     </div>
   </div>
@@ -152,11 +152,7 @@ const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(
-      90deg,
-      var(--main-color),
-      color-mix(in srgb, var(--main-color) 55%, #52c7bd)
-    );
+    background: var(--main-color);
     transition: width 0.6s ease;
   }
 }
@@ -192,6 +188,11 @@ const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
 
     strong {
       color: var(--main-color);
+    }
+
+    &.compact strong {
+      font-size: 0.95rem;
+      letter-spacing: -0.02em;
     }
   }
 }

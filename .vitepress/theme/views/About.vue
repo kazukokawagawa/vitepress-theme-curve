@@ -39,10 +39,10 @@
       <div class="about-item ten-year">
         <div class="ten-year-heading">
           <div class="ten-year-intro">
-            <span class="tip">十年之约 · A DECADE TOGETHER</span>
-            <span class="title2">以建站日为起点，赴一场十年之约</span>
+            <span class="tip">十年之约 · Make Blog Forerver</span>
+            <span class="title2">不为流量写的博客，值得被人好好读</span>
             <p class="ten-year-copy">
-              把日常写下来，让时间留下痕迹。十年后，再回到这里，看看我们一路走来的模样。
+              总则：我们的博客十年不关闭或者更久，并保持更新和活力。
             </p>
           </div>
           <div class="ten-year-mark" aria-hidden="true">
@@ -81,9 +81,15 @@
             <strong>{{ tenYearInfo?.elapsedDays ?? "—" }}</strong>
             <span>已同行（天）</span>
           </div>
-          <div class="ten-year-stat remaining">
-            <strong>{{ tenYearInfo?.remainingDays ?? "—" }}</strong>
-            <span>{{ tenYearInfo?.complete ? "圆满完成（天）" : "距离约定（天）" }}</span>
+          <div
+            :class="[
+              'ten-year-stat',
+              'remaining',
+              { compact: tenYearInfo?.remainingLabel === '剩余时间' },
+            ]"
+          >
+            <strong>{{ tenYearInfo?.remainingText ?? "—" }}</strong>
+            <span>{{ tenYearInfo?.remainingLabel ?? "剩余时间" }}</span>
           </div>
           <div class="ten-year-date end-date">
             <span class="detail-label">约定终点</span>
@@ -310,13 +316,7 @@ onMounted(() => {
       }
       &.ten-year {
         padding: 2rem 2.4rem;
-        background:
-          radial-gradient(
-            ellipse at 93% 0%,
-            color-mix(in srgb, var(--main-color) 9%, transparent),
-            transparent 38%
-          ),
-          var(--main-card-background);
+        background-color: var(--main-card-background);
 
         .ten-year-heading {
           display: flex;
@@ -409,7 +409,7 @@ onMounted(() => {
             display: block;
             height: 100%;
             border-radius: inherit;
-            background: linear-gradient(90deg, var(--main-color), #42c8c3);
+            background: var(--main-color);
             transition: width 0.6s ease;
           }
         }
@@ -442,9 +442,9 @@ onMounted(() => {
           padding-left: 1rem;
           border-left: 1px solid var(--main-card-border);
 
-          strong {
-            color: var(--main-color);
-            font-size: 1.6rem;
+          &.compact strong {
+            font-size: 1rem;
+            letter-spacing: -0.02em;
           }
         }
 
@@ -466,7 +466,11 @@ onMounted(() => {
         justify-content: center;
         padding: 2rem;
         color: #fff;
-        background-image: linear-gradient(120deg, #5b27ff 0%, #00d4ff 100%);
+        background-image: linear-gradient(
+          120deg,
+          var(--main-color) 0%,
+          color-mix(in srgb, var(--main-color) 68%, #000 32%) 100%
+        );
         background-size: 200% 200%;
         animation: gradientFlow 6s ease infinite;
         .title2 {
@@ -771,6 +775,10 @@ onMounted(() => {
 
           .ten-year-stat strong {
             font-size: 1.4rem;
+          }
+
+          .ten-year-stat.compact strong {
+            font-size: 0.95rem;
           }
 
           .ten-year-date.end-date {
