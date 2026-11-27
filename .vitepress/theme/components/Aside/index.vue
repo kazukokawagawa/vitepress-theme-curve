@@ -8,18 +8,18 @@
         show-ten-year
       />
       <Toc v-if="theme.aside.toc.enable && showToc" class="weidgets" />
-  <Weather
-    v-if="theme.aside.weather.enable && showWeather"
-    class="weidgets"
-    @fetch-error="onWeatherError"
-  />
+      <Weather
+        v-if="theme.aside.weather.enable && showWeather"
+        class="weidgets"
+        @fetch-error="onWeatherError"
+      />
       <Countdown v-if="theme.aside.countDown.enable" class="weidgets" />
       <Timing v-if="theme.aside.timing.enable" class="weidgets" />
       <!-- HelloGithub 热榜 -->
-    <HelloGithubHot
-      v-if="theme.aside.HelloGithub.enable && showHot"
-      @fetch-error="onHotError"
-    />
+      <HelloGithubHot
+        v-if="theme.aside.HelloGithub.enable && showHot"
+        @fetch-error="onHotError"
+      />
       <Tags v-if="theme.aside.tags.enable" class="weidgets" />
       <SiteData v-if="theme.aside.siteData.enable" class="weidgets" />
     </div>

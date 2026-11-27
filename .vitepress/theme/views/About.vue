@@ -60,7 +60,7 @@
                   : "十年之约进行中"
             }}
           </span>
-          <strong>{{ tenYearInfo?.progress == null ? "—" : `${tenYearInfo.progress}%` }}</strong>
+          <strong>{{ !tenYearInfo || tenYearInfo.progress === null ? "—" : `${tenYearInfo.progress}%` }}</strong>
         </div>
         <div
           class="ten-year-progress"

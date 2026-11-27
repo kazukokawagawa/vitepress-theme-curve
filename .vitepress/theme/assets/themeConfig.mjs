@@ -26,8 +26,8 @@ export const themeConfig = {
   since: "2025-04-29",
   // 十年之约全局配置：独立显示关闭时，嵌入「本年」进度组件下方
   tenYear: {
-    enable: true,
-    independent: false,
+    enable: true, // 功能总开关
+    independent: false, // 独立显示；关闭时嵌入「本年」进度下方
   },
   // 每页文章数据
   postSize: 5,
@@ -290,9 +290,6 @@ export const themeConfig = {
       enable: true,
       text: "这里有关于<strong>开发</strong>相关的问题和看法，也会有一些<strong>奇技淫巧</strong>的分享，其中大部分内容会侧重于<strong>前端开发</strong>。希望你可以在这里找到对你有用的知识和教程。",
     },
-    tenYear: {
-      enable: true,
-    },
     // 目录
     toc: {
       enable: true,
@@ -324,12 +321,6 @@ export const themeConfig = {
           icon: "💊",
           event: "HRT",
           date: "2025-03-24",
-          includeStart: true,
-        },
-        {
-          icon: "❤️",
-          event: "十年之约",
-          date: "2035-04-29",
           includeStart: true,
         },
       ],
