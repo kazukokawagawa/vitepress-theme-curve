@@ -3,7 +3,7 @@
     <Hello v-if="theme.aside.hello.enable" class="weidgets" />
     <div class="sticky">
       <Timing
-        v-if="showTenYear && theme.aside.tenYear?.enable"
+        v-if="theme.tenYear?.enable && theme.tenYear?.independent"
         class="weidgets"
         show-ten-year
       />
@@ -14,7 +14,7 @@
     @fetch-error="onWeatherError"
   />
       <Countdown v-if="theme.aside.countDown.enable" class="weidgets" />
-      <Timing v-if="theme.aside.timing.enable && !showTenYear" class="weidgets" />
+      <Timing v-if="theme.aside.timing.enable" class="weidgets" />
       <!-- HelloGithub 热榜 -->
     <HelloGithubHot
       v-if="theme.aside.HelloGithub.enable && showHot"
@@ -31,11 +31,6 @@ const { theme } = useData();
 const props = defineProps({
   // 显示目录
   showToc: {
-    type: Boolean,
-    default: false,
-  },
-  // 仅在首页显示十年之约
-  showTenYear: {
     type: Boolean,
     default: false,
   },

@@ -24,6 +24,11 @@ export const themeConfig = {
   icp: "萌ICP备20259222号",
   // 建站日期
   since: "2025-04-29",
+  // 十年之约全局配置：独立显示关闭时，嵌入「本年」进度组件下方
+  tenYear: {
+    enable: true,
+    independent: false,
+  },
   // 每页文章数据
   postSize: 5,
   // inject
@@ -319,6 +324,12 @@ export const themeConfig = {
           icon: "💊",
           event: "HRT",
           date: "2025-03-24",
+          includeStart: true,
+        },
+        {
+          icon: "❤️",
+          event: "十年之约",
+          date: "2035-04-29",
           includeStart: true,
         },
       ],

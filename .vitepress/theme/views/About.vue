@@ -31,7 +31,11 @@
         </div>
       </div>
     </div>
-    <div class="about-content ten-year-section" style="display: flex">
+    <div
+      v-if="theme.tenYear?.enable"
+      class="about-content ten-year-section"
+      style="display: flex"
+    >
       <div class="about-item ten-year">
         <div class="ten-year-heading">
           <div class="ten-year-intro">
@@ -49,14 +53,14 @@
         <div class="ten-year-progress-info">
           <span>
             {{
-              tenYearStats
-                ? tenYearStats.complete
+              !tenYearInfo || tenYearInfo.progress === null
+                ? "进度加载中"
+                : tenYearInfo.complete
                   ? "十年之约已完成"
                   : "十年之约进行中"
-                : "进度加载中"
             }}
           </span>
-          <strong>{{ tenYearStats ? `${tenYearStats.progress}%` : "—" }}</strong>
+          <strong>{{ tenYearInfo?.progress == null ? "—" : `${tenYearInfo.progress}%` }}</strong>
         </div>
         <div
           class="ten-year-progress"
@@ -64,26 +68,26 @@
           aria-label="十年之约进度"
           aria-valuemin="0"
           aria-valuemax="100"
-          :aria-valuenow="tenYearStats?.progress ?? 0"
+          :aria-valuenow="tenYearInfo?.progress ?? 0"
         >
-          <span :style="{ width: `${tenYearStats?.progress ?? 0}%` }" />
+          <span :style="{ width: `${tenYearInfo?.progress ?? 0}%` }" />
         </div>
         <div class="ten-year-details">
           <div class="ten-year-date">
             <span class="detail-label">起点 · 建站日</span>
-            <strong>{{ siteStartText }}</strong>
+            <strong>{{ tenYearInfo?.startText || String(theme.since || "—") }}</strong>
           </div>
           <div class="ten-year-stat">
-            <strong>{{ tenYearStats?.elapsedDays ?? "—" }}</strong>
+            <strong>{{ tenYearInfo?.elapsedDays ?? "—" }}</strong>
             <span>已同行（天）</span>
           </div>
           <div class="ten-year-stat remaining">
-            <strong>{{ tenYearStats?.remainingDays ?? "—" }}</strong>
-            <span>{{ tenYearStats?.complete ? "圆满完成（天）" : "距离约定（天）" }}</span>
+            <strong>{{ tenYearInfo?.remainingDays ?? "—" }}</strong>
+            <span>{{ tenYearInfo?.complete ? "圆满完成（天）" : "距离约定（天）" }}</span>
           </div>
           <div class="ten-year-date end-date">
             <span class="detail-label">约定终点</span>
-            <strong>{{ siteDeadlineText }}</strong>
+            <strong>{{ tenYearInfo?.deadlineText || "—" }}</strong>
           </div>
         </div>
       </div>
@@ -169,48 +173,14 @@
 
 <script setup>
 import { computed, onMounted } from "vue";
-import dayjs from "dayjs";
 import { useData } from "vitepress";
 import { loadScript } from "@/utils/commonTools";
 import { useClientNow } from "@/utils/useClientNow.mjs";
+import { getTenYearInfo } from "@/utils/tenYear.mjs";
 
 const { theme } = useData();
 const { now } = useClientNow({ interval: 60 * 1000 });
-const siteStartDate = computed(() => {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(theme.value.since || ""));
-  if (!match) return null;
-  const [, yearText, monthText, dayText] = match;
-  const year = Number(yearText);
-  const month = Number(monthText);
-  const day = Number(dayText);
-  const date = dayjs(new Date(year, month - 1, day));
-  if (date.year() !== year || date.month() !== month - 1 || date.date() !== day) return null;
-  return date.startOf("day");
-});
-const tenYearDeadline = computed(() => siteStartDate.value?.add(10, "year") || null);
-const siteStartText = computed(
-  () => siteStartDate.value?.format("YYYY.MM.DD") || String(theme.value.since || "—"),
-);
-const siteDeadlineText = computed(() => tenYearDeadline.value?.format("YYYY.MM.DD") || "—");
-const tenYearStats = computed(() => {
-  const start = siteStartDate.value;
-  const deadline = tenYearDeadline.value;
-  const current = now.value;
-  if (!start || !deadline || !current) return null;
-
-  const totalDays = deadline.diff(start, "day");
-  const today = current.startOf("day");
-  const elapsedDays = Math.min(Math.max(today.diff(start, "day"), 0), totalDays);
-  const remainingDays = Math.max(deadline.diff(today, "day"), 0);
-  const progress = totalDays > 0 ? Math.round((elapsedDays / totalDays) * 1000) / 10 : 100;
-
-  return {
-    elapsedDays,
-    remainingDays,
-    progress,
-    complete: !today.isBefore(deadline),
-  };
-});
+const tenYearInfo = computed(() => getTenYearInfo(theme.value.since, now.value));
 
 const birthDate = "2010-09-07";
 const hrtDate = "2025-03-24";

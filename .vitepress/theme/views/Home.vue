@@ -23,7 +23,7 @@
         />
             </div>
       <!-- 侧边栏 -->
-      <Aside v-if="isDesktopAsideVisible" :show-ten-year="true" />
+      <Aside v-if="isDesktopAsideVisible" />
     </div>
 
   </div>

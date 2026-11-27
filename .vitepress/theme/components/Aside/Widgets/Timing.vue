@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import { useData } from "vitepress";
 import { useClientNow } from "@/utils/useClientNow.mjs";
+import { getTenYearInfo } from "@/utils/tenYear.mjs";
 
 const props = defineProps({
   showTenYear: {
@@ -39,40 +40,9 @@ const timingItems = computed(() => {
   return [];
 });
 
-const tenYearStart = computed(() => {
-  if (!props.showTenYear) return null;
-
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(theme.value.since || ""));
-  if (!match) return null;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = dayjs(new Date(year, month - 1, day));
-  if (date.year() !== year || date.month() !== month - 1 || date.date() !== day) return null;
-  return date.startOf("day");
-});
-
-const tenYearDeadline = computed(() => tenYearStart.value?.add(10, "year") || null);
-const tenYearStats = computed(() => {
-  const start = tenYearStart.value;
-  const deadline = tenYearDeadline.value;
-  const current = now.value;
-  if (!start || !deadline || !current) return null;
-
-  const totalDays = deadline.diff(start, "day");
-  const today = current.startOf("day");
-  const elapsedDays = Math.min(Math.max(today.diff(start, "day"), 0), totalDays);
-  const remainingDays = Math.max(deadline.diff(today, "day"), 0);
-  const progress = totalDays > 0 ? Math.round((elapsedDays / totalDays) * 1000) / 10 : 100;
-
-  return {
-    elapsedDays,
-    remainingDays,
-    progress,
-    complete: !today.isBefore(deadline),
-  };
-});
+const tenYearInfo = computed(() =>
+  props.showTenYear ? getTenYearInfo(theme.value.since, now.value) : null,
+);
 
 const getDisplayDate = (item) => {
   const target = dayjs(item.date);
@@ -96,10 +66,10 @@ const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
 </script>
 
 <template>
-  <div v-if="showTenYear && tenYearStart" class="timing-card ten-year-card s-card">
+  <div v-if="showTenYear && tenYearInfo" class="timing-card ten-year-card s-card">
     <div class="ten-year-heading">
       <h2>十年之约</h2>
-      <strong>{{ tenYearStats ? `${tenYearStats.progress}%` : "—" }}</strong>
+      <strong>{{ tenYearInfo.progress === null ? "—" : `${tenYearInfo.progress}%` }}</strong>
     </div>
     <div
       class="ten-year-progress"
@@ -107,18 +77,18 @@ const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
       aria-label="十年之约进度"
       aria-valuemin="0"
       aria-valuemax="100"
-      :aria-valuenow="tenYearStats?.progress ?? 0"
+      :aria-valuenow="tenYearInfo.progress ?? 0"
     >
-      <span :style="{ width: `${tenYearStats?.progress ?? 0}%` }" />
+      <span :style="{ width: `${tenYearInfo.progress ?? 0}%` }" />
     </div>
     <div class="ten-year-stats">
       <div class="ten-year-stat">
-        <strong>{{ tenYearStats?.elapsedDays ?? "—" }}</strong>
+        <strong>{{ tenYearInfo.elapsedDays ?? "—" }}</strong>
         <span>已同行天数</span>
       </div>
       <div class="ten-year-stat remaining">
-        <strong>{{ tenYearStats ? (tenYearStats.complete ? "完成" : tenYearStats.remainingDays) : "—" }}</strong>
-        <span>{{ tenYearStats?.complete ? "十年之约" : "剩余天数" }}</span>
+        <strong>{{ tenYearInfo.complete ? "完成" : tenYearInfo.remainingDays ?? "—" }}</strong>
+        <span>{{ tenYearInfo.complete ? "十年之约" : "剩余天数" }}</span>
       </div>
     </div>
   </div>
@@ -146,13 +116,7 @@ const getMode = (item) => (item.yearly ? "days-until" : "days-gap");
 }
 
 .ten-year-card {
-  background:
-    radial-gradient(
-      ellipse at 100% 0%,
-      color-mix(in srgb, var(--main-color) 8%, transparent),
-      transparent 42%
-    ),
-    var(--main-card-background);
+  background-color: var(--main-card-background);
   cursor: default;
 }
 

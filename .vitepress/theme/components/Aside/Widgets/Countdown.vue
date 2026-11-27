@@ -12,23 +12,48 @@
       </span>
     </div>
     <div v-if="remainData" class="count-right">
-      <div v-for="(item, index) in remainData" :key="index" class="count-item">
-        <div class="item-name">{{ item.name }}</div>
-        <div class="item-progress">
-          <div
-            class="progress-bar"
-            :style="{ width: item.percentage + '%', opacity: item.percentage / 100 }"
-          />
-          <span :class="['percentage', { many: item.percentage >= 46 }]">
-            {{ item.percentage }}%
-          </span>
-          <span :class="['remaining', { many: item.percentage >= 60 }]">
-            <span class="tip">还剩</span>
-            {{ item.remaining }}
-            <span class="tip">天</span>
-          </span>
+      <template v-for="item in remainData" :key="item.name">
+        <div class="count-item">
+          <div class="item-name">{{ item.name }}</div>
+          <div class="item-progress">
+            <div
+              class="progress-bar"
+              :style="{ width: item.percentage + '%', opacity: item.percentage / 100 }"
+            />
+            <span :class="['percentage', { many: item.percentage >= 46 }]">
+              {{ item.percentage }}%
+            </span>
+            <span :class="['remaining', { many: item.percentage >= 60 }]">
+              <span class="tip">还剩</span>
+              {{ item.remaining }}
+              <span class="tip">天</span>
+            </span>
+          </div>
         </div>
-      </div>
+        <div
+          v-if="item.name === '本年' && showInlineTenYear && tenYearInfo"
+          class="ten-year-inline"
+        >
+          <div class="ten-year-inline-heading">
+            <span>十年之约</span>
+            <strong>{{ tenYearInfo.progress === null ? "—" : `${tenYearInfo.progress}%` }}</strong>
+          </div>
+          <div
+            class="ten-year-inline-progress"
+            role="progressbar"
+            aria-label="十年之约进度"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            :aria-valuenow="tenYearInfo.progress ?? 0"
+          >
+            <span :style="{ width: `${tenYearInfo.progress ?? 0}%` }" />
+          </div>
+          <div class="ten-year-inline-summary">
+            <span>已同行 {{ tenYearInfo.elapsedDays ?? "—" }} 天</span>
+            <span>{{ tenYearInfo.complete ? "十年之约完成" : `剩余 ${tenYearInfo.remainingDays ?? "—"} 天` }}</span>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -36,6 +61,7 @@
 <script setup>
 import { getTimeRemaining } from "@/utils/timeTools";
 import { useClientNow } from "@/utils/useClientNow.mjs";
+import { getTenYearInfo } from "@/utils/tenYear.mjs";
 
 const { theme } = useData();
 
@@ -44,6 +70,12 @@ const { theme } = useData();
 // 所以 60s 刷新能让它每分钟都动（改前是整点才跳），同时不必每秒重算。
 const { now } = useClientNow({ interval: 60 * 1000 });
 const remainData = computed(() => (now.value ? getTimeRemaining(now.value) : null));
+const showInlineTenYear = computed(
+  () => Boolean(theme.value.tenYear?.enable && !theme.value.tenYear?.independent),
+);
+const tenYearInfo = computed(() =>
+  showInlineTenYear.value ? getTenYearInfo(theme.value.since, now.value) : null,
+);
 </script>
 
 <style lang="scss" scoped>
@@ -140,6 +172,48 @@ const remainData = computed(() => (now.value ? getTimeRemaining(now.value) : nul
             opacity: 0.6;
           }
         }
+      }
+      .ten-year-inline {
+        margin-top: 0.55rem;
+        padding-top: 0.55rem;
+        border-top: 1px solid var(--main-card-border);
+      }
+      .ten-year-inline-heading,
+      .ten-year-inline-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .ten-year-inline-heading {
+        margin-bottom: 0.35rem;
+        color: var(--main-font-color);
+        font-size: 0.78rem;
+        font-weight: 600;
+        strong {
+          color: var(--main-color);
+          font-variant-numeric: tabular-nums;
+        }
+      }
+      .ten-year-inline-progress {
+        height: 5px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--main-color-bg);
+        span {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: var(--main-color);
+          transition: width 0.6s ease;
+        }
+      }
+      .ten-year-inline-summary {
+        flex-wrap: wrap;
+        margin-top: 0.35rem;
+        color: var(--main-font-second-color);
+        font-size: 0.65rem;
+        line-height: 1.4;
       }
     }
   }
