@@ -31,6 +31,63 @@
         </div>
       </div>
     </div>
+    <div class="about-content ten-year-section" style="display: flex">
+      <div class="about-item ten-year">
+        <div class="ten-year-heading">
+          <div class="ten-year-intro">
+            <span class="tip">十年之约 · A DECADE TOGETHER</span>
+            <span class="title2">以建站日为起点，赴一场十年之约</span>
+            <p class="ten-year-copy">
+              把日常写下来，让时间留下痕迹。十年后，再回到这里，看看我们一路走来的模样。
+            </p>
+          </div>
+          <div class="ten-year-mark" aria-hidden="true">
+            <span class="ten">10</span>
+            <span class="years">YEARS</span>
+          </div>
+        </div>
+        <div class="ten-year-progress-info">
+          <span>
+            {{
+              tenYearStats
+                ? tenYearStats.complete
+                  ? "十年之约已完成"
+                  : "十年之约进行中"
+                : "进度加载中"
+            }}
+          </span>
+          <strong>{{ tenYearStats ? `${tenYearStats.progress}%` : "—" }}</strong>
+        </div>
+        <div
+          class="ten-year-progress"
+          role="progressbar"
+          aria-label="十年之约进度"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="tenYearStats?.progress ?? 0"
+        >
+          <span :style="{ width: `${tenYearStats?.progress ?? 0}%` }" />
+        </div>
+        <div class="ten-year-details">
+          <div class="ten-year-date">
+            <span class="detail-label">起点 · 建站日</span>
+            <strong>{{ siteStartText }}</strong>
+          </div>
+          <div class="ten-year-stat">
+            <strong>{{ tenYearStats?.elapsedDays ?? "—" }}</strong>
+            <span>已同行（天）</span>
+          </div>
+          <div class="ten-year-stat remaining">
+            <strong>{{ tenYearStats?.remainingDays ?? "—" }}</strong>
+            <span>{{ tenYearStats?.complete ? "圆满完成（天）" : "距离约定（天）" }}</span>
+          </div>
+          <div class="ten-year-date end-date">
+            <span class="detail-label">约定终点</span>
+            <strong>{{ siteDeadlineText }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="about-content" style="grid-template-columns: 2fr 3fr">
       <div
         class="about-item static image"
@@ -111,7 +168,49 @@
 </template>
 
 <script setup>
+import { computed, onMounted } from "vue";
+import dayjs from "dayjs";
+import { useData } from "vitepress";
 import { loadScript } from "@/utils/commonTools";
+import { useClientNow } from "@/utils/useClientNow.mjs";
+
+const { theme } = useData();
+const { now } = useClientNow({ interval: 60 * 1000 });
+const siteStartDate = computed(() => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(theme.value.since || ""));
+  if (!match) return null;
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const date = dayjs(new Date(year, month - 1, day));
+  if (date.year() !== year || date.month() !== month - 1 || date.date() !== day) return null;
+  return date.startOf("day");
+});
+const tenYearDeadline = computed(() => siteStartDate.value?.add(10, "year") || null);
+const siteStartText = computed(
+  () => siteStartDate.value?.format("YYYY.MM.DD") || String(theme.value.since || "—"),
+);
+const siteDeadlineText = computed(() => tenYearDeadline.value?.format("YYYY.MM.DD") || "—");
+const tenYearStats = computed(() => {
+  const start = siteStartDate.value;
+  const deadline = tenYearDeadline.value;
+  const current = now.value;
+  if (!start || !deadline || !current) return null;
+
+  const totalDays = deadline.diff(start, "day");
+  const today = current.startOf("day");
+  const elapsedDays = Math.min(Math.max(today.diff(start, "day"), 0), totalDays);
+  const remainingDays = Math.max(deadline.diff(today, "day"), 0);
+  const progress = totalDays > 0 ? Math.round((elapsedDays / totalDays) * 1000) / 10 : 100;
+
+  return {
+    elapsedDays,
+    remainingDays,
+    progress,
+    complete: !today.isBefore(deadline),
+  };
+});
 
 const birthDate = "2010-09-07";
 const hrtDate = "2025-03-24";
@@ -238,6 +337,150 @@ onMounted(() => {
       .text {
         font-size: 18px;
         margin: 0.6rem 0;
+      }
+      &.ten-year {
+        padding: 2rem 2.4rem;
+        background:
+          radial-gradient(
+            ellipse at 93% 0%,
+            color-mix(in srgb, var(--main-color) 9%, transparent),
+            transparent 38%
+          ),
+          var(--main-card-background);
+
+        .ten-year-heading {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1.5rem;
+        }
+
+        .ten-year-intro {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+
+          .tip {
+            margin-bottom: 0.55rem;
+            color: var(--main-color);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            opacity: 0.95;
+          }
+
+          .title2 {
+            margin-right: 0;
+            color: var(--main-font-color);
+            font-size: clamp(1.7rem, 3.2vw, 2.25rem);
+            font-weight: 650;
+            letter-spacing: -0.045em;
+            line-height: 1.25;
+            text-wrap: balance;
+          }
+        }
+
+        .ten-year-copy {
+          max-width: 44rem;
+          margin: 0.75rem 0 0;
+          color: var(--main-font-second-color);
+          font-size: 0.98rem;
+          font-weight: 400;
+          letter-spacing: 0.01em;
+          line-height: 1.8;
+        }
+
+        .ten-year-mark {
+          display: flex;
+          flex-shrink: 0;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 104px;
+          height: 104px;
+          border: 1px solid color-mix(in srgb, var(--main-color) 35%, var(--main-card-border));
+          border-radius: 50%;
+          color: var(--main-color);
+          transform: rotate(8deg);
+
+          .ten {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+          }
+
+          .years {
+            margin-top: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            letter-spacing: 0.18em;
+          }
+        }
+
+        .ten-year-progress-info {
+          display: flex;
+          justify-content: space-between;
+          margin: 1.8rem 0 0.55rem;
+          color: var(--main-font-second-color);
+          font-size: 0.9rem;
+
+          strong {
+            color: var(--main-color);
+          }
+        }
+
+        .ten-year-progress {
+          height: 10px;
+          overflow: hidden;
+          border-radius: 999px;
+          background: var(--main-color-bg);
+
+          span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--main-color), #42c8c3);
+            transition: width 0.6s ease;
+          }
+        }
+
+        .ten-year-details {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+          align-items: center;
+          gap: 1rem;
+          margin-top: 1.3rem;
+        }
+
+        .ten-year-date,
+        .ten-year-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          strong {
+            font-size: 1.25rem;
+          }
+
+          span {
+            color: var(--main-font-second-color);
+            font-size: 0.8rem;
+          }
+        }
+
+        .ten-year-stat {
+          padding-left: 1rem;
+          border-left: 1px solid var(--main-card-border);
+
+          strong {
+            color: var(--main-color);
+            font-size: 1.6rem;
+          }
+        }
+
+        .ten-year-date.end-date {
+          text-align: right;
+        }
       }
       &.child {
         background-color: transparent;
@@ -528,6 +771,42 @@ onMounted(() => {
 
       .about-item {
         padding: 1.2rem 1.25rem;
+
+        &.ten-year {
+          .ten-year-heading {
+            align-items: flex-start;
+          }
+
+          .ten-year-mark {
+            width: 70px;
+            height: 70px;
+
+            .ten {
+              font-size: 2rem;
+            }
+          }
+
+          .ten-year-details {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem 0.75rem;
+          }
+
+          .ten-year-stat {
+            padding-left: 0.75rem;
+          }
+
+          .ten-year-date strong {
+            font-size: 1rem;
+          }
+
+          .ten-year-stat strong {
+            font-size: 1.4rem;
+          }
+
+          .ten-year-date.end-date {
+            text-align: left;
+          }
+        }
 
         .title1 {
           font-size: 2rem;
