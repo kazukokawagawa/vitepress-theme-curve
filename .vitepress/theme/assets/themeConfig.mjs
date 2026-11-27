@@ -285,6 +285,9 @@ export const themeConfig = {
       enable: true,
       text: "这里有关于<strong>开发</strong>相关的问题和看法，也会有一些<strong>奇技淫巧</strong>的分享，其中大部分内容会侧重于<strong>前端开发</strong>。希望你可以在这里找到对你有用的知识和教程。",
     },
+    tenYear: {
+      enable: true,
+    },
     // 目录
     toc: {
       enable: true,

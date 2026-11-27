@@ -2,6 +2,10 @@
   <aside class="main-aside">
     <Hello v-if="theme.aside.hello.enable" class="weidgets" />
     <div class="sticky">
+      <TenYear
+        v-if="showTenYear && theme.aside.tenYear?.enable"
+        class="weidgets"
+      />
       <Toc v-if="theme.aside.toc.enable && showToc" class="weidgets" />
   <Weather
     v-if="theme.aside.weather.enable && showWeather"
@@ -26,6 +30,11 @@ const { theme } = useData();
 const props = defineProps({
   // 显示目录
   showToc: {
+    type: Boolean,
+    default: false,
+  },
+  // 仅在首页显示十年之约
+  showTenYear: {
     type: Boolean,
     default: false,
   },
