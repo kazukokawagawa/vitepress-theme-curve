@@ -15,48 +15,43 @@
       </span>
     </div>
     <div v-if="remainData" class="count-right">
-      <template v-for="item in remainData" :key="item.name">
-        <div class="count-item">
-          <div class="item-name">{{ item.name }}</div>
-          <div class="item-progress">
-            <div
-              class="progress-bar"
-              :style="{ width: item.percentage + '%', opacity: item.percentage / 100 }"
-            />
-            <span :class="['percentage', { many: item.percentage >= 46 }]">
-              {{ item.percentage }}%
-            </span>
-            <span :class="['remaining', { many: item.percentage >= 60 }]">
-              <span class="tip">还剩</span>
-              {{ item.remaining }}
-              <span class="tip">{{ item.remainingUnit }}</span>
-            </span>
-          </div>
-        </div>
-        <div
-          v-if="item.name === '本年' && showInlineTenYear && tenYearInfo"
-          class="ten-year-inline"
-        >
-          <div class="ten-year-inline-heading">
-            <span>十年之约</span>
-            <strong>{{ tenYearInfo.progress === null ? "—" : `${tenYearInfo.progress}%` }}</strong>
-          </div>
+      <div v-for="item in remainData" :key="item.name" class="count-item">
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-progress">
           <div
-            class="ten-year-inline-progress"
-            role="progressbar"
-            aria-label="十年之约进度"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            :aria-valuenow="tenYearInfo.progress ?? 0"
-          >
-            <span :style="{ width: `${tenYearInfo.progress ?? 0}%` }" />
-          </div>
-          <div class="ten-year-inline-summary">
-            <span>已同行 {{ tenYearInfo.elapsedDays ?? "—" }} 天</span>
-            <span>{{ tenYearInfo.complete ? "十年之约完成" : `还剩 ${tenYearInfo.remainingText}` }}</span>
-          </div>
+            class="progress-bar"
+            :style="{ width: item.percentage + '%', opacity: item.percentage / 100 }"
+          />
+          <span :class="['percentage', { many: item.percentage >= 46 }]">
+            {{ item.percentage }}%
+          </span>
+          <span :class="['remaining', { many: item.percentage >= 60 }]">
+            <span class="tip">还剩</span>
+            {{ item.remaining }}
+            <span class="tip">{{ item.remainingUnit }}</span>
+          </span>
         </div>
-      </template>
+      </div>
+    </div>
+    <div v-if="showInlineTenYear && tenYearInfo" class="ten-year-inline">
+      <div class="ten-year-inline-heading">
+        <span>十年之约</span>
+        <strong>{{ tenYearInfo.progress === null ? "—" : `${tenYearInfo.progress}%` }}</strong>
+      </div>
+      <div
+        class="ten-year-inline-progress"
+        role="progressbar"
+        aria-label="十年之约进度"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :aria-valuenow="tenYearInfo.progress ?? 0"
+      >
+        <span :style="{ width: `${tenYearInfo.progress ?? 0}%` }" />
+      </div>
+      <div class="ten-year-inline-summary">
+        <span>已同行 {{ tenYearInfo.elapsedDays ?? "—" }} 天</span>
+        <span>{{ tenYearInfo.complete ? "十年之约完成" : `还剩 ${tenYearInfo.remainingText}` }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -86,8 +81,73 @@ const tenYearInfo = computed(() =>
   flex-direction: row;
   align-items: center;
   &.has-ten-year-inline {
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: center;
+    column-gap: 1.6rem;
+    row-gap: 0.75rem;
+
+    .count-left {
+      margin-right: 0;
+    }
+
+    .count-right {
+      min-width: 0;
+      width: auto;
+      margin-left: 0;
+    }
+
+    .ten-year-inline {
+      grid-column: 1 / -1;
+      margin-top: 0;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--main-card-border);
+    }
+
+    .ten-year-inline-heading,
+    .ten-year-inline-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .ten-year-inline-heading {
+      margin-bottom: 0.35rem;
+      color: var(--main-font-color);
+      font-size: 0.78rem;
+      font-weight: 600;
+
+      strong {
+        color: var(--main-color);
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    .ten-year-inline-progress {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--main-color-bg);
+
+      span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--main-color);
+        transition: width 0.6s ease;
+      }
+    }
+
+    .ten-year-inline-summary {
+      flex-wrap: wrap;
+      margin-top: 0.35rem;
+      color: var(--main-font-second-color);
+      font-size: 0.7rem;
+      line-height: 1.4;
+    }
   }
+
   .count-left {
     position: relative;
     display: flex;
@@ -179,48 +239,6 @@ const tenYearInfo = computed(() =>
           }
         }
       }
-    }
-    .ten-year-inline {
-      margin-top: 0.55rem;
-      padding-top: 0.55rem;
-      border-top: 1px solid var(--main-card-border);
-    }
-    .ten-year-inline-heading,
-    .ten-year-inline-summary {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-    .ten-year-inline-heading {
-      margin-bottom: 0.35rem;
-      color: var(--main-font-color);
-      font-size: 0.78rem;
-      font-weight: 600;
-      strong {
-        color: var(--main-color);
-        font-variant-numeric: tabular-nums;
-      }
-    }
-    .ten-year-inline-progress {
-      height: 5px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: var(--main-color-bg);
-      span {
-        display: block;
-        height: 100%;
-        border-radius: inherit;
-        background: var(--main-color);
-        transition: width 0.6s ease;
-      }
-    }
-    .ten-year-inline-summary {
-      flex-wrap: wrap;
-      margin-top: 0.35rem;
-      color: var(--main-font-second-color);
-      font-size: 0.65rem;
-      line-height: 1.4;
     }
   }
   &:hover {

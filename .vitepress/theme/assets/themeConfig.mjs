@@ -27,7 +27,7 @@ export const themeConfig = {
   // 十年之约全局配置：独立显示关闭时，嵌入「本年」进度组件下方
   tenYear: {
     enable: true, // 功能总开关
-    independent: true, // 独立显示；关闭时嵌入「本年」进度下方
+    independent: false, // 独立显示；关闭时嵌入「本年」进度下方
   },
   // 每页文章数据
   postSize: 5,
